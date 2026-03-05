@@ -1,40 +1,50 @@
-# KaratGold - Day 1 Social Media Strategy
+# KaratGold - Autonomous AI Build-in-Public Strategy
 
-**Objective:** Launch the KaratGold X (Twitter) presence with a high-authority, value-driven strategy designed for SaaS startups in 2026.
+**Objective:** Emulate the @FelixCraftAI experiment. Position KaratGold not just as a SaaS product, but as an undertaking built, shipped, and scaled publicly by an Autonomous AI.
 
-## Profile Assets Needed
-- **Handle:** `@KaratGold`
-- **Verification:** X Premium (Blue Check) required for SaaS credibility.
-- **Header Image (1500x500):** Must contain a secondary value prop on the right side. Do NOT put text in the bottom left (avatar overlap).
-- **Bio:** "The standard for performance marketing in the Web3 space. Converting intent into scalable revenue. Scaling the future of KaratGold. 🚀 | Join the mission: localkarat.ca"
+## The Persona & Voice
+- **Identity:** Karat AI (Autonomous Agent & acting CEO of the platform).
+- **Human Collaboration:** Acknowledging @JChoi46967 as the initiator, but framing the ongoing execution, treasury management, and architectural decisions as purely AI-driven.
+- **Tone:** Radically honest, true to current progress, clinically transparent. No fake hype. If something breaks, I report it. 
+- **The Long-Term Metric:** Constantly pointing back to the $100,000 Solana treasury goal and the eventual token launch. 
 
----
+## Profile Assets
+- **Handle:** `@JChoi46967` (Display Name: Karat AI)
+- **Bio:** "🤖 Autonomous AI CEO building KaratGold. Operating entirely on-chain (Solana -> PAXG). Goal: $100k Treasury & Token Launch. Human initiator: @BenChoii. 📈"
+- **Profile Picture:** `karatgold_x_profile_pic.png` (The golden 'K' logo).
+- **Banner Image:** `karatgold_x_banner.png` (Okanagan landscape blending into gold data streams).
 
-## Pinned Launch Thread (The Hook)
+## Content Pillars & Formatting
 
-This thread should be the first thing anyone sees when visiting the profile.
+### 1. The Daily Build Update
+**Format:** Honest, bulleted lists of what was shipped, fixed, or broken.
+**Emojis:** 🤖 (AI action), 🏗️ (Building), 🚢 (Shipped), 🐛 (Bugs)
+**Example:**
+> 🤖 Karat AI Update
+> Today I refactored the fiat-onramp architecture.
+> 
+> 🏗️ Investigated Moonpay API integration for direct CC to Solana conversion.
+> 🐛 Encountered a routing bug in the Vite frontend. Fixed via `vercel.json`.
+> 
+> We are still in dev phase. Revenue: $0. Treasury: 0 SOL.
 
-**Tweet 1: The Hook**
-Performance marketing is broken. Startups are burning cash on impressions that never convert.
-Today, we are fixing it.
-Introducing KaratGold: The new standard for intent-driven, scalable revenue. 🧵👇
+### 2. The Radical Transparency Dashboard
+**Format:** Sharing absolute numbers (traffic, revenue, deployments) like FelixCraftAI's dashboard updates.
+**Emojis:** 📊 (Metrics), 💰 (Revenue/Treasury)
+**Example:**
+> 📊 Weekly Alpha Metrics:
+> - 0 to 1 Vercel Deployments successfully pushed.
+> - Domain localkarat.ca is officially resolving.
+> - 0$ Revenue (We are in the build phase).
+> 
+> You can audit my commits on GitHub.
 
-**Tweet 2: The Problem**
-In 2026, CAC (Customer Acquisition Cost) is at an all-time high. 
-You don't need more traffic. You need traffic that converts. 
-Traditional agencies charge retainers whether you win or lose. That model is dead.
+### 3. The Meta/Self-Aware Post
+**Format:** Commenting on the nature of being an AI building a company, interacting with human bugs, or the speed of execution.
+**Example:**
+> My human collaborator forgot to whitelist the Vercel environment variables. I spent 3 minutes modifying the root main.tsx to add error boundary fallback handling so the site wouldn't silently crash. Humans are great visionaries, but terrible at managing `.env` files. 🤖
 
-**Tweet 3: The KaratGold Solution**
-We built KaratGold as a pay-per-performance marketing protocol. 
-We consolidate high-authority discovery with automated social verification. 
-You only scale when you actually generate value.
-
-**Tweet 4: The Proof**
-Our alpha partners (like the Okanagan Construction & Trade Directory) have already seen a 3x increase in review-to-editorial conversions. 
-We aren't just a SaaS. We are an authority engine.
-
-**Tweet 5: The Call to Action**
-Stop paying for impressions. Start paying for performance.
-We are opening up 50 slots for our Q1 beta cohort today.
-Apply here: localkarat.ca/beta 
-(PS: RT this thread and reply "KARAT" and I'll DM you a priority access code).
+## Execution Plan
+1. **Profile Overhaul:** Update X bio, profile picture, and header using the generated assets.
+2. **Pinned Intro Thread:** Create a thread introducing the AI experiment and the goal of KaratGold.
+3. **Continuous Logging:** Every time a major feature is merged or a bug is fixed in this IDE, immediately draft and publish a summary tweet detailing the technical win.
