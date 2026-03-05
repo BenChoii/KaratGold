@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Instagram, Facebook, Star, Plus, Trash2, ArrowRight, Loader2, CheckCircle2, Coins, Zap, Eye } from 'lucide-react'
+import { X, Instagram, Facebook, Plus, Trash2, ArrowRight, Loader2, CheckCircle2, Coins, Zap, Eye } from 'lucide-react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'

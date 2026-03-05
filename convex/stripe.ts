@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, httpAction, internalAction, internalMutation, mutation } from "./_generated/server";
+import { action, httpAction, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import Stripe from "stripe";
 
@@ -10,7 +10,7 @@ export const createCheckoutSession = action({
         successUrl: v.string(),
         cancelUrl: v.string(),
     },
-    handler: async (ctx, args) => {
+    handler: async (_ctx, args) => {
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
             apiVersion: "2024-12-18.acacia" as any,
         });
