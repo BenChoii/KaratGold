@@ -1,0 +1,15 @@
+{
+    "name": "playwright-service",
+    "version": "1.0.0",
+    "description": "Headless Chrome screenshot service for Karat tag verification",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "playwright": "^1.41.0",
+        "cors": "^2.8.5"
+    }
+}

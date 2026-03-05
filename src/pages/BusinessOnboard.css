@@ -1,0 +1,202 @@
+.onboard-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8) var(--space-4);
+    background: var(--bg-primary);
+}
+
+.onboard-content {
+    width: 100%;
+    max-width: 560px;
+}
+
+.onboard-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.onboard-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.optional-tag {
+    font-weight: 400;
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
+    margin-left: auto;
+}
+
+.select-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.submit-btn {
+    margin-top: var(--space-4);
+    width: 100%;
+    justify-content: center;
+}
+
+/* Location Type Toggle */
+.location-type-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.toggle-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.toggle-btn.active {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+/* Service Area Tags */
+.service-area-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.city-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 6px 12px;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--accent-dark);
+}
+
+.city-tag-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--accent-dark);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s;
+}
+
+.city-tag-remove:hover {
+    background: rgba(212, 175, 55, 0.4);
+}
+
+/* City Input + Suggestions */
+.city-input-wrap {
+    position: relative;
+}
+
+.city-input-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.city-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 20;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.city-suggestion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.city-suggestion:hover {
+    background: rgba(212, 175, 55, 0.08);
+}
+
+/* Form Row (side-by-side) */
+.form-row {
+    display: flex;
+    gap: var(--space-4);
+}
+
+@media (max-width: 560px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .location-type-toggle {
+        flex-direction: column;
+    }
+}

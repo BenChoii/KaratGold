@@ -1,0 +1,315 @@
+.rewards-page {
+    padding-top: calc(var(--nav-height) + var(--space-10));
+    padding-bottom: var(--space-16);
+}
+
+/* ===== BALANCE ===== */
+
+.balance-section {
+    text-align: center;
+    padding: var(--space-10) 0;
+}
+
+.balance-amount {
+    margin-top: var(--space-3);
+}
+
+.balance-ounces {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    margin-top: var(--space-1);
+}
+
+.balance-spot {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.balance-chart {
+    margin: var(--space-8) auto;
+    max-width: 500px;
+}
+
+.trend-line {
+    width: 100%;
+    height: auto;
+}
+
+.balance-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+}
+
+/* ===== QUICK STATS ===== */
+
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+}
+
+.stat-card {
+    padding: var(--space-6);
+}
+
+.stat-label {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: var(--space-2);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== ACTIVITY ===== */
+
+.activity-section {
+    margin-top: var(--space-12);
+}
+
+.activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+}
+
+.activity-icon {
+    flex-shrink: 0;
+}
+
+.activity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-business {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.activity-meta {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.activity-amount {
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.amount-positive {
+    color: var(--green-400);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.amount-pending {
+    color: var(--amber);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* ===== VERIFIED BADGE ===== */
+
+.verified-badge-row {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+}
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--green-400);
+    background: rgba(0, 200, 83, 0.08);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .balance-actions {
+        flex-direction: column;
+        align-items: center;
+        max-width: 300px;
+        margin: var(--space-6) auto 0;
+    }
+
+    .balance-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ===== CASHOUT MODAL ===== */
+
+.cashout-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+}
+
+.cashout-modal {
+    width: 100%;
+    max-width: 420px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.cashout-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--border);
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.2s;
+    background: none;
+    border: none;
+}
+
+.btn-icon:hover {
+    background: var(--bg-secondary);
+}
+
+.cashout-modal-body {
+    padding: var(--space-6);
+    text-align: center;
+}
+
+.cashout-available {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    margin: var(--space-2) 0;
+}
+
+.cashout-input-group {
+    position: relative;
+    margin-top: var(--space-6);
+    text-align: left;
+}
+
+.cashout-input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    padding-right: 72px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-top: var(--space-2);
+}
+
+.cashout-input:focus {
+    border-color: var(--accent);
+}
+
+.cashout-input::-webkit-outer-spin-button,
+.cashout-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.cashout-max-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    background: rgba(212, 175, 55, 0.1);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cashout-max-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+}
+
+.cashout-preview {
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    background: rgba(0, 200, 83, 0.06);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 200, 83, 0.15);
+}
+
+.cashout-preview p:first-child {
+    font-size: 0.8125rem;
+    color: var(--text-tertiary);
+}
+
+.cashout-preview-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--green-400);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.cashout-modal-footer {
+    padding: var(--space-4) var(--space-6) var(--space-6);
+}

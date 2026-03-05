@@ -1,0 +1,165 @@
+/* CustomerExplore.css Additions for Split Map Layout */
+
+/* Split Layout Container */
+.explore-page.split-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    padding-bottom: 0;
+    overflow: hidden;
+    /* Stop page-level scrolling, each side scrolls independently */
+}
+
+/* Base styles for the split-layout overrides */
+.split-layout .container {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+/* Left Column: List */
+.explore-list-column {
+    flex: 1;
+    max-width: 50%;
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--background);
+    z-index: 2;
+}
+
+.explore-list-content {
+    padding: var(--space-6) var(--space-8);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Right Column: Map */
+.explore-map-column {
+    flex: 1;
+    max-width: 50%;
+    height: 100%;
+    position: relative;
+    background-color: #050505;
+    z-index: 1;
+}
+
+/* Mapbox GL requires explicit height/width on its root container */
+.mapbox-map-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Adjust campaign grid layout inside the split view */
+.split-layout .campaigns-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-5);
+}
+
+/* Mobile Map Toggle Button */
+.mobile-map-toggle {
+    display: none;
+    position: fixed;
+    bottom: var(--space-6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    border-radius: 30px;
+    padding: var(--space-3) var(--space-6);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 10px rgba(var(--accent-rgb), 0.3);
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+/* Premium Map Popup Customization */
+.mapboxgl-popup {
+    z-index: 10;
+}
+
+.mapboxgl-popup-content {
+    background: rgba(15, 15, 15, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    padding: 12px !important;
+    color: var(--text-primary) !important;
+}
+
+.mapboxgl-popup-tip {
+    border-top-color: rgba(15, 15, 15, 0.85) !important;
+}
+
+.mapboxgl-popup-close-button {
+    color: var(--text-tertiary);
+    font-size: 16px;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+.mapboxgl-popup-close-button:hover {
+    color: var(--text-primary);
+    background: transparent;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .explore-list-content {
+        padding: var(--space-5) var(--space-4);
+    }
+
+    .split-layout .campaigns-grid {
+        grid-template-columns: 1fr;
+        /* Single column on tablets inside the split view */
+    }
+}
+
+@media (max-width: 768px) {
+    .split-layout {
+        flex-direction: column;
+        display: block;
+        /* Break the flex row */
+        height: auto;
+        overflow: visible;
+    }
+
+    /* On mobile, columns take 100% width and viewport height */
+    .explore-list-column,
+    .explore-map-column {
+        max-width: 100%;
+        width: 100%;
+        height: calc(100vh - var(--navbar-height));
+        /* Full remaining height */
+        position: fixed;
+        top: var(--navbar-height);
+        left: 0;
+    }
+
+    /* The toggle system */
+    .hidden-on-mobile {
+        display: none !important;
+    }
+
+    .mobile-map-toggle {
+        display: flex;
+        /* Show the button on mobile */
+    }
+
+    .explore-list-column {
+        border-right: none;
+        overflow-y: auto;
+        padding-bottom: 100px;
+        /* Space for the floating button */
+    }
+}

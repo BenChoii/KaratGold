@@ -1,0 +1,475 @@
+/* ===== GOLD EXPLAINER PAGE ===== */
+
+.gold-explainer {
+    padding-top: var(--nav-height);
+}
+
+/* ---- Hero Section ---- */
+.gold-hero {
+    position: relative;
+    padding: var(--space-24) 0 var(--space-16);
+    background: linear-gradient(180deg, #faf5ee 0%, #f6f0e4 60%, var(--bg-primary) 100%);
+    overflow: hidden;
+    text-align: center;
+}
+
+.gold-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+}
+
+.gold-hero-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(212, 175, 55, 0.12) 0%, transparent 65%);
+    pointer-events: none;
+    filter: blur(80px);
+}
+
+.gold-hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.gold-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--gold-light);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: var(--space-8);
+}
+
+.gold-hero-title {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.gold-hero-title .gold-word {
+    background: linear-gradient(135deg, var(--gold) 0%, #E8C847 40%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gold-hero-subtitle {
+    max-width: 560px;
+    margin: var(--space-5) auto 0;
+    color: var(--text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.75;
+}
+
+/* Gold bar icon group */
+.gold-hero-visual {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-8);
+    margin-top: var(--space-12);
+}
+
+.gold-hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--space-8);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    min-width: 180px;
+}
+
+.gold-hero-stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+}
+
+.gold-hero-stat-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* ---- "How Your Gold Is Backed" Section ---- */
+.gold-backing-section {
+    padding: var(--space-24) 0;
+}
+
+.gold-backing-section .section-header {
+    text-align: center;
+    margin-bottom: var(--space-16);
+}
+
+.gold-backing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+}
+
+.gold-backing-card {
+    padding: var(--space-8);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+    overflow: hidden;
+}
+
+.gold-backing-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    border-color: var(--border-hover);
+}
+
+.gold-backing-card-number {
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-6);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gold-light);
+    color: var(--gold-dark);
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gold-backing-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(245, 215, 90, 0.15) 100%);
+    color: var(--gold);
+    margin-bottom: var(--space-5);
+}
+
+.gold-backing-card h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+}
+
+.gold-backing-card p {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+/* ---- Gold vs Points Comparison ---- */
+.gold-comparison-section {
+    padding: var(--space-24) 0;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, #faf5ee 50%, var(--bg-primary) 100%);
+}
+
+.gold-comparison-section .section-header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+}
+
+.comparison-table-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    background: var(--bg-card);
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table thead {
+    background: #1a1a1a;
+}
+
+.comparison-table th {
+    padding: var(--space-5) var(--space-6);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: left;
+    color: white;
+}
+
+.comparison-table th:first-child {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.comparison-table th.col-gold {
+    color: #F5D75A;
+}
+
+.comparison-table th.col-points {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.comparison-table td {
+    padding: var(--space-4) var(--space-6);
+    font-size: 0.875rem;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.comparison-table tbody tr:hover {
+    background: var(--bg-card-hover);
+}
+
+.comparison-table td:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.comparison-table td:nth-child(2) {
+    color: var(--gold-dark);
+    font-weight: 600;
+}
+
+.comparison-table td:nth-child(3) {
+    color: var(--text-tertiary);
+}
+
+.comparison-check {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.comparison-x {
+    color: #ef4444;
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+/* ---- Trust & Regulation Section ---- */
+.gold-trust-section {
+    padding: var(--space-24) 0;
+}
+
+.gold-trust-section .section-header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+}
+
+.trust-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.trust-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-5);
+    padding: var(--space-6) var(--space-8);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.trust-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.trust-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+}
+
+.trust-card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+}
+
+.trust-card p {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* ---- Your Options Section ---- */
+.gold-options-section {
+    padding: var(--space-24) 0;
+    background: linear-gradient(180deg, var(--bg-primary) 0%, #faf5ee 100%);
+}
+
+.gold-options-section .section-header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.option-card {
+    text-align: center;
+    padding: var(--space-8) var(--space-6);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xs);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+.option-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+
+.option-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-5);
+    background: var(--gold-light);
+    color: var(--gold);
+}
+
+.option-card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+}
+
+.option-card p {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* ---- CTA Section ---- */
+.gold-cta-section {
+    padding: var(--space-16) 0 var(--space-24);
+    text-align: center;
+}
+
+.gold-cta-card {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-8);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.gold-cta-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.gold-cta-card h2 {
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.gold-cta-card p {
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: var(--space-4);
+    position: relative;
+    z-index: 1;
+}
+
+.gold-cta-buttons {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    margin-top: var(--space-8);
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    .gold-backing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trust-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gold-hero-visual {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-4);
+    }
+
+    .gold-hero-stat {
+        min-width: 240px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .comparison-table th,
+    .comparison-table td {
+        padding: var(--space-3) var(--space-4);
+        font-size: 0.75rem;
+    }
+
+    .gold-cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}
