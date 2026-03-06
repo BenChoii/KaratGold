@@ -2736,15 +2736,28 @@
     overflow: hidden;
 }
 
-.mock-map-gradient {
+.mock-map-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.7;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Vignette overlay to keep pins readable */
+.mock-map-area::after {
+    content: '';
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 35% 40%, rgba(45, 212, 160, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 65% 60%, rgba(45, 212, 160, 0.05) 0%, transparent 40%),
-        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+        radial-gradient(ellipse at center, transparent 30%, rgba(14, 14, 17, 0.6) 100%),
+        linear-gradient(to bottom, rgba(14, 14, 17, 0.3) 0%, transparent 20%, transparent 80%, rgba(14, 14, 17, 0.5) 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 /* Map pins */

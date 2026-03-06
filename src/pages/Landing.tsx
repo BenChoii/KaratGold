@@ -227,9 +227,15 @@ function MapCard() {
                     </div>
                 </div>
 
-                {/* Map area with gradient background */}
+                {/* Map area with real map background */}
                 <div className="mock-map-area">
-                    <div className="mock-map-gradient" />
+                    <img
+                        className="mock-map-bg"
+                        src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/-119.496,49.888,13,0/600x800@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
+                        alt=""
+                        loading="lazy"
+                        draggable={false}
+                    />
                     {/* Floating pins */}
                     <motion.div
                         className="mock-map-pin"
