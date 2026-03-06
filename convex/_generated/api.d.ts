@@ -24,6 +24,7 @@ import type * as stripe from "../stripe.js";
 import type * as submissions from "../submissions.js";
 import type * as tagScanner from "../tagScanner.js";
 import type * as testQuery from "../testQuery.js";
+import type * as treasury from "../treasury.js";
 import type * as users from "../users.js";
 
 import type {
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   submissions: typeof submissions;
   tagScanner: typeof tagScanner;
   testQuery: typeof testQuery;
+  treasury: typeof treasury;
   users: typeof users;
 }>;
 

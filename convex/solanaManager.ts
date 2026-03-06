@@ -2,29 +2,29 @@ import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Keypair, Connection, PublicKey, clusterApiUrl, VersionedTransaction } from "@solana/web3.js";
-
-
+import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
+import bs58 from "bs58";
 // Uses Solana Devnet for now - can switch to mainnet-beta via env vars later
 // @ts-ignore
 const RPC_URL = process.env.SOLANA_RPC_URL || clusterApiUrl("devnet");
 
-export const generateWallet = internalAction({
-    args: {},
-    handler: async () => {
-        // Generate a fresh random Keypair
-        const keypair = Keypair.generate();
-
-        // The private key is a Uint8Array. We encode it as comma-separated string for local storage.
-        // In a production system, you would want to encrypt this with a KMS or Master Key before storing.
-        const privateKeyString = keypair.secretKey.toString();
-        const publicKeyString = keypair.publicKey.toBase58();
-
-        return {
-            publicKey: publicKeyString,
-            privateKey: privateKeyString
-        };
+// Helper to extract Keypair from environment variable for the global Master Wallet
+function getMasterKeypair(): Keypair {
+    const keyString = process.env.MASTER_WALLET_PRIVATE_KEY;
+    if (!keyString) {
+        throw new Error("Missing MASTER_WALLET_PRIVATE_KEY in Convex Dashboard.");
     }
-});
+    try {
+        // Handle array representation if configured that way
+        if (keyString.startsWith("[")) {
+            return Keypair.fromSecretKey(new Uint8Array(JSON.parse(keyString)));
+        }
+        // Handle base58 representation (Phantom export format)
+        return Keypair.fromSecretKey(bs58.decode(keyString));
+    } catch (err: any) {
+        throw new Error("Failed to decode Master Wallet key: " + err.message);
+    }
+}
 
 // Helper to execute a Jupiter swap
 async function executeJupiterSwap(
@@ -118,13 +118,10 @@ export const getQuoteUsdcToPaxg = action({
 
 export const swapUsdcToPaxg = internalAction({
     args: {
-        userId: v.id("users"),
         amountUsdc: v.number(),
     },
-    handler: async (ctx, args) => {
-        const keyDoc = await ctx.runQuery(internal.users.getWalletKeys, { userId: args.userId });
-        if (!keyDoc) throw new Error("Wallet keys not found");
-
+    handler: async (_ctx, args) => {
+        const masterKeypair = getMasterKeypair();
         const amountAtomic = Math.floor(args.amountUsdc * 1_000_000); // 6 decimals
 
         try {
@@ -133,21 +130,15 @@ export const swapUsdcToPaxg = internalAction({
                 USDC_MINT,
                 PAXG_MINT,
                 amountAtomic,
-                keyDoc.publicKey
+                masterKeypair.publicKey.toBase58()
             );
 
-            // 3. Decode the private key and build the Keypair object
-            const secretKey = new Uint8Array(
-                keyDoc.encryptedPrivateKey.split("").map((c: string) => c.charCodeAt(0))
-            );
-            const signerKeypair = Keypair.fromSecretKey(secretKey);
-
-            // 4. Send and confirm on-chain
+            // Send and confirm on-chain
             const connection = new Connection(RPC_URL);
             const txid = await sendJupiterTransaction(
                 connection,
                 swapData.swapTransactionBase64,
-                signerKeypair
+                masterKeypair
             );
 
             return { success: true, txid, quote: swapData.quoteData };
@@ -166,40 +157,63 @@ export const swapPaxgToUsdc = internalAction({
         paxgAmountAtomic: v.number(),
         destinationCoinbaseAddress: v.string(), // The ultimate destination
     },
-    handler: async (ctx, args) => {
-        const keyDoc = await ctx.runQuery(internal.users.getWalletKeys, { userId: args.userId });
-        if (!keyDoc) throw new Error("Wallet keys not found");
+    handler: async (_ctx, args) => {
+        const masterKeypair = getMasterKeypair();
+        const connection = new Connection(RPC_URL, 'confirmed');
 
         try {
-            // 1. Swap PAXG back to USDC
+            // 1. Swap PAXG to USDC on the Master Wallet
             const swapData = await executeJupiterSwap(
                 PAXG_MINT,
                 USDC_MINT,
                 args.paxgAmountAtomic,
-                keyDoc.publicKey
+                masterKeypair.publicKey.toBase58()
             );
 
-            // 2. Decode the private key
-            const secretKey = new Uint8Array(
-                keyDoc.encryptedPrivateKey.split("").map((c: string) => c.charCodeAt(0))
-            );
-            const signerKeypair = Keypair.fromSecretKey(secretKey);
-
-            // 3. Send and confirm on-chain
-            const connection = new Connection(RPC_URL);
-            const txid = await sendJupiterTransaction(
+            // 2. Send and confirm Swap on-chain
+            const swapTxid = await sendJupiterTransaction(
                 connection,
                 swapData.swapTransactionBase64,
-                signerKeypair
+                masterKeypair
             );
 
-            // 4. Send the resulting USDC to the user's destination (Coinbase) address
-            console.log(`Successfully swapped PAXG to USDC on-chain. TXID: ${txid}`);
-            // TODO: ADD SPL TRANSFER TO args.destinationCoinbaseAddress HERE
+            console.log(`Successfully swapped PAXG to USDC on Master Wallet. TXID: ${swapTxid}`);
 
-            return { success: true, txid };
+            // 3. Extract exactly how much USDC we received from the quote so we can send it
+            const executionOutAmount = parseInt(swapData.quoteData.outAmount, 10);
+
+            // 4. Send the resulting USDC to the user's destination (Coinbase) address via SPL Transfer
+            const destinationPubkey = new PublicKey(args.destinationCoinbaseAddress);
+            const usdcMintPubkey = new PublicKey(USDC_MINT);
+
+            const sourceATA = await getOrCreateAssociatedTokenAccount(
+                connection,
+                masterKeypair,
+                usdcMintPubkey,
+                masterKeypair.publicKey
+            );
+
+            const destATA = await getOrCreateAssociatedTokenAccount(
+                connection,
+                masterKeypair,
+                usdcMintPubkey,
+                destinationPubkey
+            );
+
+            const transferTxid = await transfer(
+                connection,
+                masterKeypair, // fee payer
+                sourceATA.address, // source ATA
+                destATA.address, // dest ATA
+                masterKeypair.publicKey, // owner authority
+                executionOutAmount // amount in atomic units (6 decimals)
+            );
+
+            console.log(`Successfully transferred ${executionOutAmount / 1_000_000} USDC to user. TXID: ${transferTxid}`);
+
+            return { success: true, swapTxid, transferTxid };
         } catch (error: any) {
-            console.error("Jupiter Swap Error (PAXG -> USDC):", error);
+            console.error("Jupiter Swap & Transfer Error (PAXG -> USDC):", error);
             // In a production environment, if this fails during cashout, you likely need to 
             // refund the user's Convex goldBalance and mark the transaction as failed.
             return { success: false, error: error.message };

@@ -145,4 +145,13 @@ export default defineSchema({
         source: v.string(),
         fetchedAt: v.float64(),
     }),
+
+    // Global internal ledger for tracking KaratGold's 20% platform fees
+    karatTreasury: defineTable({
+        assetType: v.union(v.literal("paxg"), v.literal("sol"), v.literal("cad"), v.literal("usd")),
+        balance: v.float64(),
+        totalCollected: v.float64(),
+        totalSwapped: v.float64(), // Amount of CAD/USD swapped to actual Crypto in the master wallet
+        lastUpdated: v.float64(),
+    }).index("by_asset", ["assetType"]),
 });

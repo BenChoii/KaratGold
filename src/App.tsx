@@ -14,6 +14,8 @@ import ScanPage from './pages/ScanPage'
 import PreAuthJoin from './pages/PreAuthJoin'
 import CustomerTeaser from './pages/CustomerTeaser'
 import BusinessTeaser from './pages/BusinessTeaser'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
 
 // Wrapper that ensures user is signed in
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,6 +48,8 @@ function App() {
                             <Route path="/join/business" element={<BusinessTeaser />} />
                             <Route path="/gold" element={<GoldExplainer />} />
                             <Route path="/coinbase-guide" element={<CoinbaseGuide />} />
+                            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                            <Route path="/terms-of-service" element={<TermsOfService />} />
 
                             {/* Protected — requires sign in */}
                             <Route path="/role" element={

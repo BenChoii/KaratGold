@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ShieldCheck, ArrowRight, CheckCircle2, Instagram, Loader2, Search, Coins, Clock, Camera, Cpu, ArrowUpRight, MapPin, Activity, Heart, Zap, Sparkles } from 'lucide-react'
+import { ShieldCheck, ArrowRight, CheckCircle2, Instagram, Loader2, Search, Coins, Clock, Cpu, ArrowUpRight, MapPin, Activity, Heart, Zap, Sparkles, Camera } from 'lucide-react'
 import { useState, useEffect, useRef, type MouseEvent } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
+import SplineScene from '@splinetool/react-spline'
+import { TreasuryTracker } from '../components/TreasuryTracker'
 import './Landing.css'
 
 /* ===== ANIMATION VARIANTS ===== */
@@ -472,7 +474,66 @@ function Landing() {
                             <a href="#how-it-works" className="btn btn-outline-green btn-lg">
                                 How It Works
                             </a>
+                        </motion.div>
                     </div>
+
+                    {/* RIGHT: Spline 3D Dominos Scene */}
+                    <motion.div
+                        className="hero-spline-area"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 80, damping: 22, delay: 0.3 }}
+                    >
+                        {/* Gold tint overlay */}
+                        <div className="spline-gold-overlay" />
+
+                        <div className="spline-container">
+                            <SplineScene
+                                scene="https://prod.spline.design/E4RB9iwXIiTqiaM2/scene.splinecode"
+                                className="hero-spline"
+                            />
+                        </div>
+
+                        {/* Pill bubble covering the Spline watermark */}
+                        <div className="spline-watermark-bubble">
+                            ✦ Powered by Karat Gold
+                        </div>
+
+                        {/* Floating flow labels */}
+                        <motion.div
+                            className="spline-flow-label spline-label-post"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1.2, duration: 0.6 }}
+                        >
+                            <Camera size={14} />
+                            <span>Post</span>
+                        </motion.div>
+                        <motion.div
+                            className="spline-flow-label spline-label-verify"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1.5, duration: 0.6 }}
+                        >
+                            <Cpu size={14} />
+                            <span>Verify</span>
+                        </motion.div>
+                        <motion.div
+                            className="spline-flow-label spline-label-earn"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1.8, duration: 0.6 }}
+                        >
+                            <Coins size={14} />
+                            <span>Earn Gold</span>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* ===== GLOBAL TREASURY TRACKER ===== */}
+            <section className="treasury-section" style={{ padding: '0 20px', position: 'relative', marginTop: '-40px', zIndex: 20 }}>
+                <TreasuryTracker />
             </section>
 
             {/* ===== SECTION 1: TRUST MARQUEE ===== */}

@@ -19,7 +19,7 @@ function BusinessDashboard() {
     const [fundCurrency, setFundCurrency] = useState<'gold' | 'cad'>('gold')
     const [funding, setFunding] = useState(false)
 
-    const createCheckoutSession = useAction(api.stripe.createCheckoutSession)
+    const fundPoolMutation = useMutation(api.businesses.fundPool)
 
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
     const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
@@ -95,17 +95,21 @@ function BusinessDashboard() {
                 return
             }
 
-            const checkoutUrl = await createCheckoutSession({
+            // Simulated MoonPay SDK Flow (Direct Ledger Funding)
+            await new Promise(resolve => setTimeout(resolve, 1500))
+
+            await fundPoolMutation({
                 businessId: business._id,
-                cadAmount,
-                successUrl: `${window.location.origin}/dashboard?fund_success=true`,
-                cancelUrl: `${window.location.origin}/dashboard?fund_canceled=true`,
+                amount: parseFloat(fundAmount),
+                currency: fundCurrency,
             })
 
-            window.location.href = checkoutUrl
+            setShowFundDialog(false)
+            setFundAmount('')
+            setFunding(false)
         } catch (err: any) {
             console.error('Funding error:', err)
-            alert(err.message || "Failed to initiate funding session.")
+            alert(err.message || "Failed to process MoonPay funding.")
             setFunding(false)
         }
     }
@@ -548,12 +552,15 @@ function BusinessDashboard() {
                 </motion.div>
             </div>
 
-            {/* Campaign Creation Modal */}
             <CreateCampaignModal
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 businessId={business._id}
                 goldPool={business.goldPool}
+                onFundClick={() => {
+                    setShowCreateModal(false)
+                    setShowFundDialog(true)
+                }}
             />
 
             {/* Fund Gold Dialog */}

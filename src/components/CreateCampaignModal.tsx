@@ -11,6 +11,7 @@ interface CreateCampaignModalProps {
     onClose: () => void
     businessId: Id<"businesses">
     goldPool: number
+    onFundClick: () => void
 }
 
 const PLATFORMS = [
@@ -18,7 +19,7 @@ const PLATFORMS = [
     { id: 'Facebook', label: 'Facebook', icon: Facebook, color: '#1877F2' },
 ]
 
-function CreateCampaignModal({ isOpen, onClose, businessId, goldPool }: CreateCampaignModalProps) {
+function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClick }: CreateCampaignModalProps) {
     const createCampaign = useMutation(api.campaigns.create)
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
     const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
@@ -405,9 +406,21 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool }: CreateCa
                                             </p>
                                         )}
                                         {meetsBudgetMin && !hasEnoughGold && (
-                                            <p className="cm-cost-warning">
-                                                You need {(totalCost - goldPool).toFixed(3)} oz more. Fund your gold pool first.
-                                            </p>
+                                            <div className="cm-cost-warning-box" style={{ marginTop: '16px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px' }}>
+                                                <p style={{ color: 'var(--red)', fontSize: '0.8125rem', marginBottom: '8px', fontWeight: 600 }}>
+                                                    Not Enough Gold
+                                                </p>
+                                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem', marginBottom: '12px' }}>
+                                                    You need {(totalCost - goldPool).toFixed(3)} oz more to launch this campaign.
+                                                </p>
+                                                <button
+                                                    className="btn btn-primary btn-sm"
+                                                    style={{ width: '100%', justifyContent: 'center' }}
+                                                    onClick={onFundClick}
+                                                >
+                                                    <Coins size={14} /> Fund Gold Pool
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

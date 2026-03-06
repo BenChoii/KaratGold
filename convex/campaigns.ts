@@ -156,6 +156,27 @@ export const create = mutation({
             totalPlatformFees: (business.totalPlatformFees ?? 0) + feeGrams,
         });
 
+        // Add 20% protocol fee directly to the global KaratTreasury internal ledger
+        const treasuryQuery = await ctx.db.query("karatTreasury")
+            .withIndex("by_asset", (q) => q.eq("assetType", "paxg"))
+            .first();
+
+        if (treasuryQuery) {
+            await ctx.db.patch(treasuryQuery._id, {
+                balance: treasuryQuery.balance + feeGrams,
+                totalCollected: treasuryQuery.totalCollected + feeGrams,
+                lastUpdated: Date.now(),
+            });
+        } else {
+            await ctx.db.insert("karatTreasury", {
+                assetType: "paxg",
+                balance: feeGrams,
+                totalCollected: feeGrams,
+                totalSwapped: 0,
+                lastUpdated: Date.now(),
+            });
+        }
+
         // Record platform fee transaction
         await ctx.db.insert("goldTransactions", {
             userId: business.ownerId,
@@ -192,14 +213,6 @@ export const create = mutation({
             platformFeeCad: feeCad,
             verificationMethod: args.verificationMethod ?? (business.verificationTier === "auto" ? "auto" : "manual"),
             createdAt: Date.now(),
-        });
-
-        // Trigger the Solana integration to swap the funded USDC into PAXG
-        // Note: in a real implementation, we would wait until the fiat gateway clears the 
-        // payment before doing this. This assumes the budgetCad has been collected successfully.
-        await ctx.scheduler.runAfter(0, internal.solanaManager.swapUsdcToPaxg, {
-            userId: business.ownerId,
-            amountUsdc: budgetCad + feeCad,
         });
 
         return campaignId;
