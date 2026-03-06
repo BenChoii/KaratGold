@@ -26,46 +26,93 @@ const fadeUp = {
 
 /* ===== VERIFY CARD ===== */
 function VerifyCard() {
-    const checks = ['Hashtag #ad present', 'Business tagged', 'Photo quality', 'Location match']
+    const checks = [
+        { label: 'Hashtag #ad', icon: '🏷️' },
+        { label: 'Business tagged', icon: '📍' },
+        { label: 'Photo quality', icon: '📸' },
+        { label: 'Location verified', icon: '✅' }
+    ]
     const [phase, setPhase] = useState(0)
 
     useEffect(() => {
-        const t = setInterval(() => setPhase(p => (p + 1) % 6), 1200)
-
+        const t = setInterval(() => setPhase(p => (p + 1) % 7), 1100)
         return () => clearInterval(t)
     }, [])
 
+    const allDone = phase >= 5
+
     return (
         <div className="scene-verify hiw-card">
-            <div className="verify-inner">
-                <motion.div
-                    className="scanner-line"
-                    animate={{ top: ['0%', '100%'] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-                />
-                <div className="verify-checks">
+            <div className="verify-inner-v2">
+                {/* App header */}
+                <div className="mock-app-bar">
+                    <span className="mock-app-title">Verification</span>
+                    <div className="verify-status-pill">
+                        {allDone ? (
+                            <span className="verify-status-done">✓ Complete</span>
+                        ) : (
+                            <span className="verify-status-scanning">Scanning...</span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Post preview */}
+                <div className="verify-post-preview">
+                    <div className="verify-post-image">
+                        <div className="verify-post-placeholder">
+                            <span>📷</span>
+                        </div>
+                        {!allDone && (
+                            <motion.div
+                                className="verify-scan-line"
+                                animate={{ top: ['0%', '100%'] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                            />
+                        )}
+                        {allDone && (
+                            <motion.div
+                                className="verify-post-approved"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                            >
+                                <span>✓</span>
+                            </motion.div>
+                        )}
+                    </div>
+                    <div className="verify-post-meta">
+                        <span className="verify-post-caption">Great coffee at @BeanScene! ☕ #ad</span>
+                        <span className="verify-post-platform">via Instagram · 2 min ago</span>
+                    </div>
+                </div>
+
+                {/* Checklist */}
+                <div className="verify-checklist">
                     {checks.map((c, i) => {
                         const done = phase > i + 1
                         const active = phase === i + 1
-
                         return (
-                            <div key={i} className={`verify-row ${done ? 'done' : ''} ${active ? 'active' : ''}`}>
-                                <span className="verify-row-icon">
-                                    {done ? <CheckCircle2 size={18} /> : active ? <Loader2 size={18} className="spinning" /> : <span className="check-pending" />}
+                            <div key={i} className={`verify-check-row ${done ? 'done' : ''} ${active ? 'active' : ''}`}>
+                                <span className="verify-check-icon">
+                                    {done ? <CheckCircle2 size={15} /> : active ? <Loader2 size={15} className="spinning" /> : <span className="verify-check-empty" />}
                                 </span>
-                                <span className="verify-row-label">{c}</span>
+                                <span className="verify-check-emoji">{c.icon}</span>
+                                <span className="verify-check-label">{c.label}</span>
                             </div>
                         )
                     })}
                 </div>
-                {phase >= 5 && (
+
+                {/* Result banner */}
+                {allDone && (
                     <motion.div
-                        className="verify-result"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="verify-reward-banner"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: "spring", stiffness: 200 }}
                     >
-                        ✅ Post Verified
+                        <Sparkles size={14} />
+                        <span>+0.011 oz Gold earned</span>
                     </motion.div>
                 )}
             </div>
@@ -78,81 +125,71 @@ function GoldPileCard() {
     const [showDetails, setShowDetails] = useState(false)
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
     const paxgCad = goldPriceData?.paxgCad ?? (93.47 * 31.1035)
-    const rewardValue = (0.003 * paxgCad).toFixed(2)
+    const totalCad = (0.047 * paxgCad).toFixed(2)
 
     useEffect(() => {
-        const t = setTimeout(() => setShowDetails(true), 1200)
-
+        const t = setTimeout(() => setShowDetails(true), 800)
         return () => clearTimeout(t)
     }, [])
 
     return (
         <div className="scene-gold hiw-card">
-            <div className="gold-glow-bg" />
-            <div className="gold-wallet-inner">
-                {/* Wallet header */}
-                <div className="gold-wallet-header">
-                    <div className="gold-wallet-icon">
-                        <Coins size={16} />
-                    </div>
-                    <div className="gold-wallet-header-text">
-                        <span className="gold-wallet-label">Your Gold Wallet</span>
-                        <span className="gold-wallet-balance">0.010 oz</span>
+            <div className="wallet-inner-v2">
+                {/* App header */}
+                <div className="mock-app-bar">
+                    <span className="mock-app-title">Wallet</span>
+                    <div className="wallet-badge">
+                        <Coins size={12} />
+                        <span>PAXG</span>
                     </div>
                 </div>
 
-                {/* Reward notification */}
-                <motion.div
-                    className="gold-reward-notif"
-                    initial={{ opacity: 0, y: 12, scale: 0.96 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: 0.5, type: "spring", stiffness: 140 }}
-                    viewport={{ once: true }}
-                >
-                    <div className="gold-notif-dot" />
-                    <div className="gold-notif-content">
-                        <span className="gold-notif-title">Reward Received <Sparkles size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /></span>
-                        <span className="gold-notif-amount">+ 0.003 oz Gold</span>
+                {/* Balance hero */}
+                <div className="wallet-balance-hero">
+                    <span className="wallet-balance-label">Total Balance</span>
+                    <div className="wallet-balance-amount">
+                        <span className="wallet-amount-value">0.047</span>
+                        <span className="wallet-amount-unit">oz</span>
                     </div>
-                    <span className="gold-notif-time">Just now</span>
-                </motion.div>
+                    <span className="wallet-balance-fiat">≈ ${totalCad} CAD</span>
+                </div>
 
-                {/* Breakdown */}
+                {/* Sparkline */}
+                <div className="wallet-chart">
+                    <GoldSparkline />
+                    <div className="wallet-chart-label">
+                        <span className="wallet-chart-change">+12.4%</span>
+                        <span className="wallet-chart-period">30d</span>
+                    </div>
+                </div>
+
+                {/* Transaction list */}
                 {showDetails && (
                     <motion.div
-                        className="gold-breakdown"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
+                        className="wallet-transactions"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     >
-                        <div className="gold-breakdown-row">
-                            <span>Post reward</span>
-                            <span className="gold-breakdown-val">0.002 oz</span>
+                        <span className="wallet-tx-header">Recent Activity</span>
+                        <div className="wallet-tx-row">
+                            <div className="wallet-tx-icon">☕</div>
+                            <div className="wallet-tx-info">
+                                <span className="wallet-tx-name">Bean Scene Café</span>
+                                <span className="wallet-tx-time">Today, 2:34 PM</span>
+                            </div>
+                            <span className="wallet-tx-amount">+0.011 oz</span>
                         </div>
-                        <div className="gold-breakdown-row">
-                            <span>Quality bonus</span>
-                            <span className="gold-breakdown-val accent">+0.001 oz</span>
-                        </div>
-                        <div className="gold-breakdown-divider" />
-                        <div className="gold-breakdown-row total">
-                            <span>Total earned</span>
-                            <span className="gold-breakdown-val">0.003 oz</span>
+                        <div className="wallet-tx-row">
+                            <div className="wallet-tx-icon">🍺</div>
+                            <div className="wallet-tx-info">
+                                <span className="wallet-tx-name">BNA Brewing</span>
+                                <span className="wallet-tx-time">Yesterday</span>
+                            </div>
+                            <span className="wallet-tx-amount">+0.016 oz</span>
                         </div>
                     </motion.div>
                 )}
-
-                {/* Value tag */}
-                <motion.div
-                    className="gold-value-pill"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 1.2 }}
-                    viewport={{ once: true }}
-                >
-                    <span>≈ ${rewardValue} CAD</span>
-                    <span className="gold-value-dot">·</span>
-                    <span className="gold-value-backed">Backed by real bullion</span>
-                </motion.div>
             </div>
         </div>
     )
