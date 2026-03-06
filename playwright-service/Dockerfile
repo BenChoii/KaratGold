@@ -13,9 +13,7 @@ RUN npm ci --production
 # Copy server code
 COPY server.js .
 
-# Railway sets PORT automatically
-ENV PORT=3333
-
+# Railway injects PORT automatically — server.js falls back to 3333 if not set
 EXPOSE 3333
 
 CMD ["node", "server.js"]
