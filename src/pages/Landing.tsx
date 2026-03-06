@@ -564,6 +564,33 @@ function Landing() {
                 </div>
             </section>
 
+            {/* ===== TRUSTED BY & BUILT WITH ===== */}
+            <section className="trust-logos-section">
+                <p className="trust-logos-label">Trusted by & built with</p>
+                <div className="trust-logos-row">
+                    <div className="trust-logo-item">
+                        <img src="/assets/partners/stripe.png" alt="Stripe" />
+                        <span>Payments</span>
+                    </div>
+                    <div className="trust-logo-item">
+                        <img src="/assets/partners/paxg.png" alt="Paxos Gold (PAXG)" />
+                        <span>Gold Custody</span>
+                    </div>
+                    <div className="trust-logo-item">
+                        <img src="/assets/partners/lbma.png" alt="LBMA Certified" />
+                        <span>Gold Standard</span>
+                    </div>
+                    <div className="trust-logo-item partner-highlight">
+                        <img src="/assets/partners/oktd.png" alt="OKTD.ca" />
+                        <span>Partner</span>
+                    </div>
+                    <div className="trust-logo-item">
+                        <img src="/assets/partners/solana.png" alt="Solana" />
+                        <span>Blockchain</span>
+                    </div>
+                </div>
+            </section>
+
             {/* ===== SECTION 2: STICKY HOW IT WORKS ===== */}
             <section id="how-it-works" className="sticky-hiw-section">
                 <div className="container sticky-hiw-grid">
@@ -796,18 +823,18 @@ function Landing() {
                         <div className="footer-col">
                             <h4 className="footer-col-title">Resources</h4>
                             <div className="footer-links">
-                                <a href="#how-it-works">How It Works</a>
+                                <Link to="/how-it-works/customer">How It Works</Link>
                                 <Link to="/gold">The Gold Standard</Link>
-                                <a href="#">Help Center</a>
+                                <Link to="/how-cashout-works">Cash Out Guide</Link>
                             </div>
                         </div>
 
                         <div className="footer-col">
                             <h4 className="footer-col-title">Legal</h4>
                             <div className="footer-links">
-                                <a href="#">Terms of Service</a>
-                                <a href="#">Privacy Policy</a>
-                                <a href="#">Creator Guidelines</a>
+                                <Link to="/terms-of-service">Terms of Service</Link>
+                                <Link to="/privacy-policy">Privacy Policy</Link>
+                                <Link to="/how-it-works/customer">Creator Guidelines</Link>
                             </div>
                         </div>
                     </div>

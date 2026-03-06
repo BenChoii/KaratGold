@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Coins, Camera, ShieldCheck, ArrowRight } from 'lucide-react'
 import { SignUpButton } from '@clerk/clerk-react'
@@ -55,6 +56,9 @@ function CustomerTeaser() {
                             </button>
                         </SignUpButton>
                         <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Clerk Auth</p>
+                        <Link to="/how-it-works/customer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.75rem', textDecoration: 'none', fontWeight: 500 }}>
+                            Learn how Karat Gold works →
+                        </Link>
                     </motion.div>
 
                 </motion.div>

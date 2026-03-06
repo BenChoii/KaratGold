@@ -2332,6 +2332,91 @@
     }
 }
 
+/* ===== TRUST LOGOS BAR ===== */
+.trust-logos-section {
+    padding: 3rem 0 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.trust-logos-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 1.5rem;
+}
+
+.trust-logos-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.trust-logo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.trust-logo-item img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    filter: grayscale(100%) brightness(0.7);
+    opacity: 0.5;
+    transition: all 0.35s ease;
+}
+
+.trust-logo-item:hover img {
+    filter: grayscale(0%) brightness(1);
+    opacity: 1;
+}
+
+.trust-logo-item span {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.trust-logo-item:hover span {
+    opacity: 1;
+    color: var(--text-secondary);
+}
+
+.trust-logo-item.partner-highlight img {
+    filter: grayscale(50%) brightness(0.8);
+    opacity: 0.65;
+}
+
+.trust-logo-item.partner-highlight:hover img {
+    filter: grayscale(0%) brightness(1);
+    opacity: 1;
+}
+
+@media (max-width: 640px) {
+    .trust-logos-row {
+        gap: 1.5rem;
+    }
+
+    .trust-logo-item img {
+        height: 28px;
+    }
+}
+
 /* ===== SECTION 2: STICKY HOW IT WORKS ===== */
 .sticky-hiw-section {
     padding: var(--space-12) 0;

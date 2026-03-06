@@ -82,6 +82,7 @@ function Navbar() {
         <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''} ${hidden && !mobileOpen ? 'navbar-hidden' : ''} `}>
             <div className="navbar-inner container">
                 <Link to="/" className="navbar-logo" aria-label="OKTD home" style={{ gap: '8px' }}>
+                    <img src="/assets/karat-logo.png" alt="Karat" style={{ height: 28, width: 28, borderRadius: 6 }} />
                     <span className="logo-text">KARAT</span>
                     <span className="logo-text" style={{ opacity: 0.5 }}>×</span>
                     <div className="logo-oktd">

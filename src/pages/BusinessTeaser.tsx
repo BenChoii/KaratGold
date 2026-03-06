@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Briefcase, BarChart3, Users, ArrowRight } from 'lucide-react'
 import { SignUpButton } from '@clerk/clerk-react'
@@ -50,6 +51,9 @@ function BusinessTeaser() {
                             </button>
                         </SignUpButton>
                         <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Clerk Auth</p>
+                        <Link to="/how-it-works/business" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.75rem', textDecoration: 'none', fontWeight: 500 }}>
+                            Learn how campaigns work →
+                        </Link>
                     </motion.div>
 
                 </motion.div>

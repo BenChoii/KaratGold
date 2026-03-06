@@ -20,6 +20,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import HowItWorksCustomer from './pages/HowItWorksCustomer'
 import HowItWorksBusiness from './pages/HowItWorksBusiness'
 import HowCashoutWorks from './pages/HowCashoutWorks'
+import LandingV2 from './pages/LandingV2'
 
 // Wrapper that ensures user is signed in
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -58,6 +59,7 @@ function App() {
                             <Route path="/how-it-works/customer" element={<HowItWorksCustomer />} />
                             <Route path="/how-it-works/business" element={<HowItWorksBusiness />} />
                             <Route path="/how-cashout-works" element={<HowCashoutWorks />} />
+                            <Route path="/landing-v2" element={<LandingV2 />} />
 
                             {/* Protected — requires sign in */}
                             <Route path="/role" element={
