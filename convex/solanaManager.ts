@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { Keypair, Connection, PublicKey, clusterApiUrl, VersionedTransaction } from "@solana/web3.js";
 import { getOrCreateAssociatedTokenAccount, transfer } from "@solana/spl-token";
 import bs58 from "bs58";

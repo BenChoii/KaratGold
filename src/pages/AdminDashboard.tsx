@@ -229,7 +229,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map((u) => (
+                                    {users.map((u: any) => (
                                         <tr key={u._id}>
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{u.name}</td>
                                             <td>{u.email}</td>
@@ -266,7 +266,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {businesses.map((b) => (
+                                    {businesses.map((b: any) => (
                                         <tr key={b._id}>
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{b.name}</td>
                                             <td>{b.ownerName}</td>
@@ -303,7 +303,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {campaigns.map((c) => (
+                                    {campaigns.map((c: any) => (
                                         <tr key={c._id}>
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{c.title}</td>
                                             <td>{c.businessName}</td>
@@ -339,7 +339,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {withdrawals.map((w) => (
+                                    {withdrawals.map((w: any) => (
                                         <tr key={w._id}>
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{w.userName}</td>
                                             <td>{formatGold(w.amount)}</td>

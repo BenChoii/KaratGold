@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 // List all active campaigns (for customer explore)
 export const listActive = query({
@@ -229,5 +228,15 @@ export const togglePause = mutation({
         const newStatus = campaign.status === "active" ? "paused" : "active";
         await ctx.db.patch(args.campaignId, { status: newStatus });
         return { status: newStatus };
+    },
+});
+
+// Get Karat treasury data
+export const getKaratTreasury = query({
+    args: {},
+    handler: async (ctx) => {
+        return await ctx.db.query("karatTreasury")
+            .withIndex("by_asset", (q) => q.eq("assetType", "paxg"))
+            .first();
     },
 });

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ShieldCheck, ArrowRight, CheckCircle2, Instagram, Loader2, Search, Coins, Clock, Cpu, ArrowUpRight, MapPin, Activity, Heart, Zap, Sparkles, Camera } from 'lucide-react'
+import { ShieldCheck, ArrowRight, CheckCircle2, Instagram, Loader2, Coins, Clock, Cpu, ArrowUpRight, MapPin, Activity, Heart, Zap, Sparkles, Camera } from 'lucide-react'
 import { useState, useEffect, useRef, type MouseEvent } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -27,19 +27,21 @@ const fadeUp = {
 /* ===== VERIFY CARD ===== */
 function VerifyCard() {
     const checks = [
-        { label: 'Hashtag #ad', icon: '🏷️' },
-        { label: 'Business tagged', icon: '📍' },
-        { label: 'Photo quality', icon: '📸' },
-        { label: 'Location verified', icon: '✅' }
+        { label: 'Hashtag #ad detected', icon: '🏷️' },
+        { label: 'Business @BeanScene tagged', icon: '📍' },
+        { label: 'Photo quality score: 94', icon: '📸' },
+        { label: 'Kelowna location match', icon: '✅' }
     ]
     const [phase, setPhase] = useState(0)
 
     useEffect(() => {
-        const t = setInterval(() => setPhase(p => (p + 1) % 7), 1100)
+        const t = setInterval(() => setPhase(p => (p + 1) % 8), 900)
         return () => clearInterval(t)
     }, [])
 
-    const allDone = phase >= 5
+    const completedChecks = Math.min(phase - 1, 4)
+    const progress = Math.min(phase / 5, 1)
+    const allDone = phase >= 6
 
     return (
         <div className="scene-verify hiw-card">
@@ -49,55 +51,75 @@ function VerifyCard() {
                     <span className="mock-app-title">Verification</span>
                     <div className="verify-status-pill">
                         {allDone ? (
-                            <span className="verify-status-done">✓ Complete</span>
+                            <span className="verify-status-done">✓ Verified</span>
                         ) : (
-                            <span className="verify-status-scanning">Scanning...</span>
+                            <span className="verify-status-scanning">{Math.round(progress * 100)}%</span>
                         )}
                     </div>
                 </div>
 
-                {/* Post preview */}
-                <div className="verify-post-preview">
-                    <div className="verify-post-image">
-                        <div className="verify-post-placeholder">
-                            <span>📷</span>
+                {/* Instagram-style post card */}
+                <div className="verify-post-card">
+                    {/* User row */}
+                    <div className="verify-user-row">
+                        <div className="verify-user-avatar">S</div>
+                        <div className="verify-user-info">
+                            <span className="verify-user-name">sarah.kelowna</span>
+                            <span className="verify-user-loc">Bean Scene Café · Kelowna</span>
                         </div>
+                        <Instagram size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
+                    </div>
+
+                    {/* Post image */}
+                    <div className="verify-post-img-wrap">
+                        <img src="/mock-post.png" alt="" className="verify-post-img" draggable={false} />
                         {!allDone && (
                             <motion.div
                                 className="verify-scan-line"
                                 animate={{ top: ['0%', '100%'] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                                transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
                             />
                         )}
                         {allDone && (
                             <motion.div
                                 className="verify-post-approved"
-                                initial={{ opacity: 0, scale: 0.8 }}
+                                initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ type: "spring", stiffness: 300 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 15 }}
                             >
-                                <span>✓</span>
+                                <CheckCircle2 size={28} />
                             </motion.div>
                         )}
                     </div>
-                    <div className="verify-post-meta">
-                        <span className="verify-post-caption">Great coffee at @BeanScene! ☕ #ad</span>
-                        <span className="verify-post-platform">via Instagram · 2 min ago</span>
+
+                    {/* Caption */}
+                    <div className="verify-post-caption-row">
+                        <span>Great coffee at <strong>@BeanScene</strong>! ☕ <span style={{ color: 'rgba(255,255,255,0.4)' }}>#ad #kelowna</span></span>
+                    </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="verify-progress-wrap">
+                    <div className="verify-progress-bar">
+                        <motion.div
+                            className="verify-progress-fill"
+                            animate={{ width: `${progress * 100}%` }}
+                            transition={{ duration: 0.3 }}
+                        />
                     </div>
                 </div>
 
                 {/* Checklist */}
                 <div className="verify-checklist">
                     {checks.map((c, i) => {
-                        const done = phase > i + 1
-                        const active = phase === i + 1
+                        const done = completedChecks > i
+                        const active = completedChecks === i && !allDone
                         return (
                             <div key={i} className={`verify-check-row ${done ? 'done' : ''} ${active ? 'active' : ''}`}>
                                 <span className="verify-check-icon">
-                                    {done ? <CheckCircle2 size={15} /> : active ? <Loader2 size={15} className="spinning" /> : <span className="verify-check-empty" />}
+                                    {done ? <CheckCircle2 size={14} /> : active ? <Loader2 size={14} className="spinning" /> : <span className="verify-check-empty" />}
                                 </span>
-                                <span className="verify-check-emoji">{c.icon}</span>
-                                <span className="verify-check-label">{c.label}</span>
+                                <span className="verify-check-label">{c.icon} {c.label}</span>
                             </div>
                         )
                     })}
