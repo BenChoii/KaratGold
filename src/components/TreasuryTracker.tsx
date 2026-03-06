@@ -1,3 +1,4 @@
+import { Component, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
@@ -5,14 +6,30 @@ import { Coins, Flame, TrendingUp, Sparkles } from 'lucide-react'
 import { AnimatedCounter } from './AnimatedCounter'
 import './TreasuryTracker.css'
 
-export function TreasuryTracker() {
+/* Error boundary to prevent TreasuryTracker from crashing the whole page */
+class TreasuryErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+    constructor(props: { children: ReactNode }) {
+        super(props)
+        this.state = { hasError: false }
+    }
+    static getDerivedStateFromError() {
+        return { hasError: true }
+    }
+    render() {
+        if (this.state.hasError) return null
+        return this.props.children
+    }
+}
+
+function TreasuryTrackerInner() {
     const treasury = useQuery(api.campaigns.getKaratTreasury)
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
+
     const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
 
-    if (treasury === undefined) return null
+    if (treasury === undefined || treasury === null) return null
 
-    const balanceGrams = treasury.balance
+    const balanceGrams = treasury.balance ?? 0
     const targetCad = 100000
     const currentCad = balanceGrams * GOLD_PRICE_PER_OUNCE
     const progressPercent = Math.min((currentCad / targetCad) * 100, 100)
@@ -72,5 +89,13 @@ export function TreasuryTracker() {
                 </div>
             </motion.div>
         </div>
+    )
+}
+
+export function TreasuryTracker() {
+    return (
+        <TreasuryErrorBoundary>
+            <TreasuryTrackerInner />
+        </TreasuryErrorBoundary>
     )
 }
