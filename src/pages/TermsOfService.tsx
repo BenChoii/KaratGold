@@ -47,7 +47,7 @@ function TermsOfService() {
                     <h2>5. Campaigns & Rewards</h2>
                     <h3>5.1 For Businesses</h3>
                     <ul>
-                        <li>You fund campaigns by purchasing gold reserves through our integrated payment provider (MoonPay).</li>
+                        <li>You fund campaigns by purchasing gold reserves through our integrated payment provider (Stripe).</li>
                         <li>A 20% platform fee is deducted from each campaign budget at the time of creation.</li>
                         <li>Campaigns are subject to our content guidelines and may be removed at our discretion.</li>
                         <li>Refunds for unused campaign funds are handled on a case-by-case basis.</li>
@@ -65,7 +65,7 @@ function TermsOfService() {
                 <section>
                     <h2>6. Payments & Financial Terms</h2>
                     <ul>
-                        <li>All payments are processed through MoonPay. By making a purchase, you also agree to MoonPay's terms of service.</li>
+                        <li>All payments are processed through Stripe. By making a purchase, you also agree to Stripe's terms of service.</li>
                         <li>Gold balances on the platform represent fractional ownership claims tracked on our internal ledger.</li>
                         <li>Withdrawals are processed as cryptocurrency transfers from our custodial Master Wallet to your designated address.</li>
                         <li>We are not a bank, exchange, or licensed financial institution. Gold balances are not insured deposits.</li>

@@ -23,7 +23,7 @@ function PrivacyPolicy() {
                         <li><strong>Account Information:</strong> Name, email address, and profile details provided through our authentication provider (Clerk).</li>
                         <li><strong>Business Information:</strong> Business name, category, location, Instagram handle, and other details submitted during business onboarding.</li>
                         <li><strong>Transaction Data:</strong> Records of gold earnings, campaign participation, and withdrawal requests.</li>
-                        <li><strong>Payment Information:</strong> When funding campaigns through our third-party payment provider (MoonPay), your payment details are collected and processed directly by MoonPay under their own privacy policy. We do not store credit card numbers.</li>
+                        <li><strong>Payment Information:</strong> When funding campaigns through our third-party payment provider (Stripe), your payment details are collected and processed directly by Stripe under their own privacy policy. We do not store credit card numbers.</li>
                         <li><strong>Social Media Handles:</strong> Instagram or Facebook usernames submitted for post verification.</li>
                     </ul>
 
@@ -51,7 +51,7 @@ function PrivacyPolicy() {
                     <h2>4. How We Share Your Information</h2>
                     <p>We do not sell your personal information. We may share data with:</p>
                     <ul>
-                        <li><strong>Service Providers:</strong> Third-party vendors who assist in operating the platform (e.g., Clerk for authentication, MoonPay for payment processing, Convex for database hosting).</li>
+                        <li><strong>Service Providers:</strong> Third-party vendors who assist in operating the platform (e.g., Clerk for authentication, Stripe for payment processing, Convex for database hosting).</li>
                         <li><strong>Business Partners:</strong> Campaign-participating businesses may see your submitted post data (username, post URL) for verification purposes.</li>
                         <li><strong>Legal Requirements:</strong> If required by law, regulation, or legal process.</li>
                     </ul>
@@ -90,7 +90,7 @@ function PrivacyPolicy() {
                 <section>
                     <h2>8. Third-Party Services</h2>
                     <p>
-                        Our Service integrates with third-party platforms including MoonPay, Instagram, Facebook,
+                        Our Service integrates with third-party platforms including Stripe, Instagram, Facebook,
                         and Clerk. These services have their own privacy policies, and we encourage you to review them.
                     </p>
                 </section>
