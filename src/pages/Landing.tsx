@@ -536,57 +536,64 @@ function Landing() {
                 <TreasuryTracker />
             </section>
 
-            {/* ===== SECTION 1: TRUST MARQUEE ===== */}
-            <section className="trust-marquee">
-                <div className="marquee-track">
-                    <div className="marquee-items">
-                        <span className="marquee-item"><ShieldCheck size={16} /> LBMA-Certified Gold Backing</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Cpu size={16} /> Powered by Convex AI</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Instagram size={16} /> Verified Instagram Integration</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Clock size={16} /> Auto-Payouts in seconds</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Activity size={16} /> Zero Wasted Ad Spend</span>
-                        {/* duplicate for pure CSS seamless loop */}
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><ShieldCheck size={16} /> LBMA-Certified Gold Backing</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Cpu size={16} /> Powered by Convex AI</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Instagram size={16} /> Verified Instagram Integration</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Clock size={16} /> Auto-Payouts in seconds</span>
-                        <span className="marquee-dot">·</span>
-                        <span className="marquee-item"><Activity size={16} /> Zero Wasted Ad Spend</span>
+            {/* ===== TRUST & TECHNOLOGY PARTNERS ===== */}
+            <section className="trust-section">
+                <div className="trust-section-inner">
+                    <div className="trust-marquee-strip">
+                        <div className="marquee-track">
+                            <div className="marquee-items">
+                                <span className="marquee-item"><ShieldCheck size={14} /> LBMA-Certified Gold</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Cpu size={14} /> AI-Powered Verification</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Instagram size={14} /> Instagram Verified</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Clock size={14} /> Instant Payouts</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Activity size={14} /> Zero Wasted Spend</span>
+                                {/* duplicate for loop */}
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><ShieldCheck size={14} /> LBMA-Certified Gold</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Cpu size={14} /> AI-Powered Verification</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Instagram size={14} /> Instagram Verified</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Clock size={14} /> Instant Payouts</span>
+                                <span className="marquee-dot">·</span>
+                                <span className="marquee-item"><Activity size={14} /> Zero Wasted Spend</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </section>
 
-            {/* ===== TRUSTED BY & BUILT WITH ===== */}
-            <section className="trust-logos-section">
-                <p className="trust-logos-label">Trusted by & built with</p>
-                <div className="trust-logos-row">
-                    <div className="trust-logo-item">
-                        <img src="/assets/partners/stripe.png" alt="Stripe" />
-                        <span>Payments</span>
-                    </div>
-                    <div className="trust-logo-item">
-                        <img src="/assets/partners/paxg.png" alt="Paxos Gold (PAXG)" />
-                        <span>Gold Custody</span>
-                    </div>
-                    <div className="trust-logo-item">
-                        <img src="/assets/partners/lbma.png" alt="LBMA Certified" />
-                        <span>Gold Standard</span>
-                    </div>
-                    <div className="trust-logo-item partner-highlight">
-                        <img src="/assets/partners/oktd.png" alt="OKTD.ca" />
-                        <span>Partner</span>
-                    </div>
-                    <div className="trust-logo-item">
-                        <img src="/assets/partners/solana.png" alt="Solana" />
-                        <span>Blockchain</span>
+                    <div className="trust-partners">
+                        <p className="trust-partners-label">Powered by industry leaders</p>
+                        <div className="trust-partners-row">
+                            <div className="trust-partner">
+                                <span className="partner-name">stripe</span>
+                                <span className="partner-role">Payments</span>
+                            </div>
+                            <div className="trust-partner-divider" />
+                            <div className="trust-partner">
+                                <span className="partner-name">Paxos</span>
+                                <span className="partner-role">Gold Custody</span>
+                            </div>
+                            <div className="trust-partner-divider" />
+                            <div className="trust-partner">
+                                <span className="partner-name">LBMA</span>
+                                <span className="partner-role">Gold Standard</span>
+                            </div>
+                            <div className="trust-partner-divider" />
+                            <div className="trust-partner">
+                                <span className="partner-name">OKTD</span>
+                                <span className="partner-role">Partner</span>
+                            </div>
+                            <div className="trust-partner-divider" />
+                            <div className="trust-partner">
+                                <span className="partner-name">Solana</span>
+                                <span className="partner-role">Blockchain</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
