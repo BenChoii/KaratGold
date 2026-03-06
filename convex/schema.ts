@@ -24,10 +24,36 @@ export default defineSchema({
         walletAddress: v.optional(v.string()), // For external UI display/connection
         custodialWalletAddress: v.optional(v.string()), // Backend-managed Solana address
         encryptedPrivateKey: v.optional(v.string()), // Backend-managed key
+        // Stripe Connect
+        stripeConnectAccountId: v.optional(v.string()),
+        stripeConnectOnboarded: v.optional(v.boolean()),
+        stripePayoutMethod: v.optional(v.union(v.literal("bank"), v.literal("debit"))),
         createdAt: v.float64(),
     })
         .index("by_clerk_id", ["clerkId"])
         .index("by_role", ["role"]),
+
+    withdrawals: defineTable({
+        userId: v.id("users"),
+        amount: v.float64(),           // gold ounces
+        cadAmount: v.float64(),        // CAD equivalent at time of withdrawal
+        method: v.union(v.literal("stripe"), v.literal("crypto")),
+        status: v.union(
+            v.literal("pending"),
+            v.literal("processing"),
+            v.literal("completed"),
+            v.literal("failed")
+        ),
+        stripeTransferId: v.optional(v.string()),
+        cryptoTxSignature: v.optional(v.string()),
+        cryptoDestAddress: v.optional(v.string()),
+        failureReason: v.optional(v.string()),
+        completedAt: v.optional(v.float64()),
+        createdAt: v.float64(),
+    })
+        .index("by_user", ["userId"])
+        .index("by_status", ["status"])
+        .index("by_method", ["method"]),
 
     businesses: defineTable({
         ownerId: v.id("users"),

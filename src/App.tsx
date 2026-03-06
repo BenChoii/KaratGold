@@ -16,6 +16,10 @@ import CustomerTeaser from './pages/CustomerTeaser'
 import BusinessTeaser from './pages/BusinessTeaser'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfService from './pages/TermsOfService'
+import AdminDashboard from './pages/AdminDashboard'
+import HowItWorksCustomer from './pages/HowItWorksCustomer'
+import HowItWorksBusiness from './pages/HowItWorksBusiness'
+import HowCashoutWorks from './pages/HowCashoutWorks'
 
 // Wrapper that ensures user is signed in
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -50,6 +54,10 @@ function App() {
                             <Route path="/coinbase-guide" element={<CoinbaseGuide />} />
                             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                             <Route path="/terms-of-service" element={<TermsOfService />} />
+                            <Route path="/admin" element={<AdminDashboard />} />
+                            <Route path="/how-it-works/customer" element={<HowItWorksCustomer />} />
+                            <Route path="/how-it-works/business" element={<HowItWorksBusiness />} />
+                            <Route path="/how-cashout-works" element={<HowCashoutWorks />} />
 
                             {/* Protected — requires sign in */}
                             <Route path="/role" element={
