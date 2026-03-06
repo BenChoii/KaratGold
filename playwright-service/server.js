@@ -146,7 +146,7 @@ app.post('/scan-tagged', async (req, res) => {
         // Instagram's tagged grid uses article elements or specific class patterns
         const postLinks = await page.evaluate(() => {
             const links = [];
-            // Instagram post links in the grid
+            // Instagram post links in the grid — format: /username/p/ID/ or /username/reel/ID/
             const anchors = document.querySelectorAll('a[href*="/p/"], a[href*="/reel/"]');
             anchors.forEach(a => {
                 const href = a.getAttribute('href');
@@ -154,15 +154,26 @@ app.post('/scan-tagged', async (req, res) => {
                     links.push(href);
                 }
             });
-            return links.slice(0, 4); // First 4 posts
+            return links.slice(0, 6); // First 6 posts
         });
 
-        console.log(`[scan] Found ${postLinks.length} tagged posts`);
+        // Extract usernames from post hrefs — /username/reel/ID/ → username
+        function extractUsernameFromHref(href) {
+            const match = href.match(/^\/([^\/]+)\/(p|reel)\//);
+            return match ? match[1].toLowerCase() : null;
+        }
+
+        // Get unique usernames from the grid hrefs alone
+        const gridUsernames = [...new Set(
+            postLinks.map(extractUsernameFromHref).filter(Boolean)
+        )];
+        console.log(`[scan] Found ${postLinks.length} tagged posts, grid usernames: ${gridUsernames.join(', ')}`);
 
         // Click into each post and screenshot
         const postDetails = [];
         for (const postHref of postLinks.slice(0, 3)) {
             try {
+                const hrefUsername = extractUsernameFromHref(postHref);
                 const postUrl = `https://www.instagram.com${postHref}`;
                 await page.goto(postUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
                 await page.waitForTimeout(2000);
@@ -170,17 +181,32 @@ app.post('/scan-tagged', async (req, res) => {
                 // Extract visible text (username, caption, location)
                 const postInfo = await page.evaluate(() => {
                     const text = document.body.innerText || '';
-                    // Try to find the poster's username from the post page
-                    const headerLink = document.querySelector('header a[href*="/"]');
-                    const username = headerLink ? headerLink.textContent?.trim() : null;
+                    // Try multiple selectors to find the poster's username
+                    const selectors = [
+                        'header a[role="link"]',
+                        'header a[href*="/"]',
+                        'article header a',
+                        'a[role="link"][tabindex="0"]',
+                    ];
+                    let username = null;
+                    for (const sel of selectors) {
+                        const el = document.querySelector(sel);
+                        if (el && el.textContent?.trim()) {
+                            username = el.textContent.trim();
+                            break;
+                        }
+                    }
                     return { bodyText: text.substring(0, 2000), username };
                 });
+
+                // Use href-extracted username as primary, DOM as fallback
+                const finalUsername = hrefUsername || postInfo.username?.toLowerCase() || null;
 
                 const postScreenshot = await page.screenshot({ type: 'png' });
                 postDetails.push({
                     screenshot: postScreenshot.toString('base64'),
                     href: postHref,
-                    username: postInfo.username,
+                    username: finalUsername,
                     bodyTextSnippet: postInfo.bodyText.substring(0, 500),
                 });
             } catch (err) {
@@ -188,11 +214,11 @@ app.post('/scan-tagged', async (req, res) => {
             }
         }
 
-        // Extract any visible handles from the grid/posts
-        const foundHandles = postDetails
-            .map(p => p.username)
-            .filter(Boolean)
-            .map(u => u.toLowerCase());
+        // Combine usernames from all sources
+        const foundHandles = [...new Set([
+            ...gridUsernames,
+            ...postDetails.map(p => p.username).filter(Boolean),
+        ])];
 
         await page.close();
 

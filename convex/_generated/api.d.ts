@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as ai from "../ai.js";
 import type * as businesses from "../businesses.js";
 import type * as campaigns from "../campaigns.js";
@@ -21,10 +22,10 @@ import type * as seed from "../seed.js";
 import type * as solana from "../solana.js";
 import type * as solanaManager from "../solanaManager.js";
 import type * as stripe from "../stripe.js";
+import type * as stripeConnect from "../stripeConnect.js";
 import type * as submissions from "../submissions.js";
 import type * as tagScanner from "../tagScanner.js";
 import type * as testQuery from "../testQuery.js";
-import type * as treasury from "../treasury.js";
 import type * as users from "../users.js";
 
 import type {
@@ -34,6 +35,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   ai: typeof ai;
   businesses: typeof businesses;
   campaigns: typeof campaigns;
@@ -47,10 +49,10 @@ declare const fullApi: ApiFromModules<{
   solana: typeof solana;
   solanaManager: typeof solanaManager;
   stripe: typeof stripe;
+  stripeConnect: typeof stripeConnect;
   submissions: typeof submissions;
   tagScanner: typeof tagScanner;
   testQuery: typeof testQuery;
-  treasury: typeof treasury;
   users: typeof users;
 }>;
 
