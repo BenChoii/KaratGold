@@ -7,22 +7,93 @@ import type { Id } from "./_generated/dataModel";
 declare var process: { env: Record<string, string | undefined> };
 declare var Buffer: { from(data: ArrayBuffer): { toString(encoding: string): string } };
 
-// ─── OpenRouter (Gemini 2.0 Flash) verification action ───
-// Analyzes an uploaded screenshot against campaign requirements
-// Extracts: approval status, confidence, reason, followerCount, location/business tagging
+// ─── AI Verification Engine ───
+// Supports two AI backends:
+//   1. Google AI Studio (GEMINI_API_KEY) — free, recommended
+//   2. OpenRouter (OPENROUTER_API_KEY) — paid, fallback
+// Analyzes uploaded screenshots against campaign requirements
+// Extracts: approval status, confidence, reason, followerCount
+
+async function callGeminiDirect(apiKey: string, prompt: string, imageBase64: string | null): Promise<any> {
+    const parts: any[] = [{ text: prompt }];
+    if (imageBase64) {
+        parts.push({
+            inline_data: {
+                mime_type: "image/jpeg",
+                data: imageBase64,
+            },
+        });
+    }
+
+    const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: { temperature: 0.1, maxOutputTokens: 400 },
+            }),
+        }
+    );
+
+    if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`Gemini API ${resp.status}: ${errText}`);
+    }
+
+    const data = await resp.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
+async function callOpenRouter(apiKey: string, prompt: string, imageBase64: string | null): Promise<any> {
+    const userContent: any[] = imageBase64
+        ? [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } },
+        ]
+        : [{ type: "text", text: prompt }];
+
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+            "HTTP-Referer": "https://localkarat.ca",
+            "X-Title": "Karat Gold Verification",
+        },
+        body: JSON.stringify({
+            model: "google/gemini-2.0-flash-001",
+            messages: [
+                { role: "system", content: "You are a social media post verification AI. Respond ONLY in valid JSON — no markdown, no code fences." },
+                { role: "user", content: userContent },
+            ],
+            max_tokens: 400,
+            temperature: 0.1,
+        }),
+    });
+
+    if (!resp.ok) throw new Error(`OpenRouter ${resp.status}`);
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content ?? "";
+}
+
 export const verifySubmission = action({
     args: {
         submissionId: v.id("submissions"),
     },
     handler: async (ctx, args): Promise<void> => {
-        const apiKey = process.env.OPENROUTER_API_KEY;
-        if (!apiKey) {
-            console.error("OPENROUTER_API_KEY not set — falling back to auto-approve");
+        // Check for API keys — prefer Google AI Studio (free), fall back to OpenRouter
+        const geminiKey = process.env.GEMINI_API_KEY;
+        const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+        if (!geminiKey && !openrouterKey) {
+            console.error("No AI API key set (GEMINI_API_KEY or OPENROUTER_API_KEY) — auto-approving");
             await ctx.runMutation(internal.ai.applyVerdict, {
                 submissionId: args.submissionId,
                 approved: true,
                 confidence: 75,
-                reason: "AI verification unavailable — auto-approved for demo",
+                reason: "AI verification unavailable — auto-approved (set GEMINI_API_KEY in Convex dashboard)",
                 followerCount: 0,
             });
             return;
@@ -38,11 +109,10 @@ export const verifySubmission = action({
             return;
         }
 
-        // 2. Get image data
+        // 2. Get image data from Convex storage or URL
         let imageBase64: string | null = null;
 
         if (submission.imageStorageId) {
-            // Option A: uploaded screenshot
             const imageUrl = await ctx.storage.getUrl(submission.imageStorageId as Id<"_storage">);
             if (imageUrl) {
                 const resp = await fetch(imageUrl);
@@ -50,19 +120,12 @@ export const verifySubmission = action({
                 imageBase64 = Buffer.from(buffer).toString("base64");
             }
         } else if (submission.postUrl) {
-            // Option B: URL — try to fetch og:image
             try {
                 const resp = await fetch(submission.postUrl, {
-                    headers: {
-                        "User-Agent": "Mozilla/5.0 (compatible; KaratBot/1.0)",
-                    },
+                    headers: { "User-Agent": "Mozilla/5.0 (compatible; KaratBot/1.0)" },
                 });
                 const html = await resp.text();
-
-                // Extract og:image from HTML meta tags
-                const ogMatch = html.match(
-                    /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i
-                );
+                const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
                 if (ogMatch && ogMatch[1]) {
                     const imgResp = await fetch(ogMatch[1]);
                     const imgBuffer = await imgResp.arrayBuffer();
@@ -73,90 +136,60 @@ export const verifySubmission = action({
             }
         }
 
-        // 3. Build prompt for Gemini 2.0 Flash via OpenRouter
+        // 3. Build verification prompt
         const requirements = submission.requirements?.join(", ") ?? "Include #ad, tag the business, show the product";
         const businessName = submission.businessName ?? "the business";
         const campaignName = submission.campaignName ?? "the campaign";
-        const instagramHandle = submission.instagramHandle ?? "";
-        const facebookHandle = submission.facebookHandle ?? "";
 
-        const messages: any[] = [
-            {
-                role: "system",
-                content: `You are a social media post verification AI for Karat, a gold rewards platform. Users post about local businesses on Instagram or Facebook to earn real gold. You analyze screenshots of their posts to verify authenticity and extract metrics. Respond ONLY in valid JSON — no markdown, no code fences.`,
-            },
-            {
-                role: "user",
-                content: imageBase64
-                    ? [
-                        {
-                            type: "text",
-                            text: `Verify this social media post screenshot for the campaign "${campaignName}" by ${businessName}.
-${instagramHandle ? `Instagram: @${instagramHandle}` : ""}
-${facebookHandle ? `Facebook: @${facebookHandle}` : ""}
+        const prompt = imageBase64
+            ? `You are a social media post verification AI for Karat, a gold rewards platform.
+
+Verify this social media post screenshot for the campaign "${campaignName}" by ${businessName}.
 
 Requirements: ${requirements}
 
 Analyze the image and determine:
-1. Is this a real social media post screenshot (not fabricated)?
+1. Is this a real social media post screenshot (Instagram, Facebook, etc.) — not a fabricated image?
 2. Does it tag or mention: ${businessName}?
 3. Is a location tagged in the post?
 4. Does it meet the requirements listed above?
-5. What is the poster's follower/friend count visible in the screenshot? Look for numbers like "1,234 followers" or "12.4K followers" on the profile. If not visible, return 0.
+5. What is the poster's follower count visible in the screenshot? If not visible, return 0.
 
-Respond in JSON format ONLY — no code fences, no extra text:
-{"approved": true/false, "confidence": 0-100, "reason": "one sentence explanation", "followerCount": number, "locationTagged": true/false, "businessTagged": true/false}`,
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: `data:image/jpeg;base64,${imageBase64}`,
-                            },
-                        },
-                    ]
-                    : [
-                        {
-                            type: "text",
-                            text: `A user submitted a post URL (${submission.postUrl}) for the campaign "${campaignName}" by ${businessName}, but we couldn't fetch the image. The requirements are: ${requirements}. Since we cannot verify the visual content, respond with: {"approved": false, "confidence": 20, "reason": "Unable to analyze post — image could not be loaded from the provided URL. Please try uploading a screenshot instead.", "followerCount": 0, "locationTagged": false, "businessTagged": false}`,
-                        },
-                    ],
-            },
-        ];
+Respond ONLY in valid JSON — no code fences, no extra text:
+{"approved": true/false, "confidence": 0-100, "reason": "one sentence explanation", "followerCount": number, "locationTagged": true/false, "businessTagged": true/false}`
+            : `A user submitted a post URL but no image could be loaded. Respond with: {"approved": false, "confidence": 20, "reason": "Unable to analyze — please upload a screenshot instead.", "followerCount": 0, "locationTagged": false, "businessTagged": false}`;
 
         try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`,
-                    "HTTP-Referer": "https://karat.gold",
-                    "X-Title": "Karat Gold Verification",
-                },
-                body: JSON.stringify({
-                    model: "google/gemini-2.0-flash-001",
-                    messages,
-                    max_tokens: 300,
-                    temperature: 0.1,
-                }),
-            });
+            let raw: string;
 
-            const data = await response.json();
-            const content = data.choices?.[0]?.message?.content ?? "";
+            if (geminiKey) {
+                console.log("[AI] Using Google AI Studio (Gemini) for verification");
+                raw = await callGeminiDirect(geminiKey, prompt, imageBase64);
+            } else {
+                console.log("[AI] Using OpenRouter for verification");
+                raw = await callOpenRouter(openrouterKey!, prompt, imageBase64);
+            }
 
-            // Parse JSON from response (handle potential markdown code blocks)
-            const jsonStr = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-            const result = JSON.parse(jsonStr);
+            // Parse JSON from response (strip potential markdown fences)
+            const jsonStr = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+            const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
 
-            await ctx.runMutation(internal.ai.applyVerdict, {
-                submissionId: args.submissionId,
-                approved: result.approved ?? false,
-                confidence: result.confidence ?? 50,
-                reason: result.reason ?? "No reason provided",
-                followerCount: typeof result.followerCount === "number" ? result.followerCount : 0,
-            });
-        } catch (err) {
-            console.error("OpenRouter verification error:", err);
-            // Fail gracefully — reject with explanation
+            if (jsonMatch) {
+                const result = JSON.parse(jsonMatch[0]);
+
+                await ctx.runMutation(internal.ai.applyVerdict, {
+                    submissionId: args.submissionId,
+                    approved: result.approved ?? false,
+                    confidence: result.confidence ?? 50,
+                    reason: result.reason ?? "No reason provided",
+                    followerCount: typeof result.followerCount === "number" ? result.followerCount : 0,
+                });
+                return;
+            }
+
+            throw new Error("Could not parse JSON from AI response");
+        } catch (err: any) {
+            console.error("[AI] Verification error:", err.message);
             await ctx.runMutation(internal.ai.applyVerdict, {
                 submissionId: args.submissionId,
                 approved: false,
