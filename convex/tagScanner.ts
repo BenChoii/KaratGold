@@ -1,20 +1,19 @@
 import { v } from "convex/values";
 import { action, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
-// import type { Id } from "./_generated/dataModel";
 
 /* eslint-disable no-var */
 declare var process: { env: Record<string, string | undefined> };
+declare var Buffer: { from(data: ArrayBuffer): { toString(encoding: string): string } };
 
-// ─── Tag Scanner ───
+// ─── Instagram Tag Scanner ───
 // On-demand: triggered when a user claims they tagged a business
-// 1. Playwright screenshots the business's /scan page (EmbedSocial widget)
-// 2. Gemini Flash extracts visible usernames
-// 3. Checks if the claiming user's handle appears
+// 1. Playwright browses instagram.com/{business}/tagged/
+// 2. Screenshots the tagged grid + recent individual posts
+// 3. Gemini Flash checks if the claiming user's handle appears
 // 4. Auto-verifies if found, rejects if not
 
 const PLAYWRIGHT_URL = process.env.PLAYWRIGHT_SERVICE_URL ?? "http://localhost:3333";
-const SCAN_PAGE_BASE = process.env.SCAN_PAGE_BASE_URL ?? "http://localhost:5173";
 
 // ── Internal queries ──
 
@@ -22,6 +21,13 @@ export const getBusinessById = internalQuery({
     args: { businessId: v.id("businesses") },
     handler: async (ctx, args) => {
         return await ctx.db.get(args.businessId);
+    },
+});
+
+export const getCampaignById = internalQuery({
+    args: { campaignId: v.id("campaigns") },
+    handler: async (ctx, args) => {
+        return await ctx.db.get(args.campaignId);
     },
 });
 
@@ -171,7 +177,66 @@ export const deactivateStaleBusinesses = internalMutation({
     },
 });
 
-// ── On-demand scan action (called when user claims a tag) ──
+// ── Gemini AI helper (supports Google AI Studio + OpenRouter) ──
+
+async function analyzeWithGemini(prompt: string, screenshotBase64: string): Promise<string> {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+    if (geminiKey) {
+        // Google AI Studio (free)
+        const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: "image/png", data: screenshotBase64 } },
+                        ],
+                    }],
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 500 },
+                }),
+            }
+        );
+        if (!resp.ok) throw new Error(`Gemini API ${resp.status}`);
+        const data = await resp.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    }
+
+    if (openrouterKey) {
+        // OpenRouter fallback
+        const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${openrouterKey}`,
+                "HTTP-Referer": "https://localkarat.ca",
+            },
+            body: JSON.stringify({
+                model: "google/gemini-2.0-flash-001",
+                messages: [{
+                    role: "user",
+                    content: [
+                        { type: "text", text: prompt },
+                        { type: "image_url", image_url: { url: `data:image/png;base64,${screenshotBase64}` } },
+                    ],
+                }],
+                max_tokens: 500,
+                temperature: 0.1,
+            }),
+        });
+        if (!resp.ok) throw new Error(`OpenRouter ${resp.status}`);
+        const data = await resp.json();
+        return (data as any).choices?.[0]?.message?.content ?? "";
+    }
+
+    throw new Error("No AI API key set (GEMINI_API_KEY or OPENROUTER_API_KEY)");
+}
+
+// ── Main scan action (called when user claims a tag) ──
 
 export const scanForUser = action({
     args: {
@@ -180,97 +245,71 @@ export const scanForUser = action({
         instagramHandle: v.string(),
     },
     handler: async (ctx, args): Promise<{ verified: boolean; reason: string }> => {
-        const apiKey = process.env.OPENROUTER_API_KEY;
         const handle = args.instagramHandle.toLowerCase().replace(/^@/, "");
 
-        // const campaigns = await ctx.runQuery(internal.tagScanner.getActiveCampaigns, {
-        //     businessId: "placeholder" as any, // We'll get this from the campaign
-        // });
-
-        // Actually, let's get the campaign directly
-        // We need a query for this — let's use the campaign data we already have
-        // The campaign has businessId, so we fetch the business from there
-
-        // Step 1: Get business from campaign
+        // Step 1: Get campaign and business
         const campaign = await ctx.runQuery(internal.tagScanner.getCampaignById, {
             campaignId: args.campaignId,
         });
 
-        if (!campaign) {
-            return { verified: false, reason: "Campaign not found" };
-        }
-
-        if (campaign.status !== "active") {
-            return { verified: false, reason: "Campaign is not active" };
-        }
-
-        if (campaign.currentSubmissions >= campaign.maxSubmissions) {
-            return { verified: false, reason: "Campaign is full" };
-        }
+        if (!campaign) return { verified: false, reason: "Campaign not found" };
+        if (campaign.status !== "active") return { verified: false, reason: "Campaign is not active" };
+        if (campaign.currentSubmissions >= campaign.maxSubmissions) return { verified: false, reason: "Campaign is full" };
 
         const business = await ctx.runQuery(internal.tagScanner.getBusinessById, {
             businessId: campaign.businessId,
         });
+        if (!business) return { verified: false, reason: "Business not found" };
 
-        if (!business) {
-            return { verified: false, reason: "Business not found" };
+        const businessIgHandle = business.instagramHandle?.replace(/^@/, "").toLowerCase();
+        if (!businessIgHandle) {
+            return { verified: false, reason: "Business has no Instagram handle configured" };
         }
 
-        // Step 2: Check for duplicates
-        const alreadySubmitted = await ctx.runQuery(
-            internal.tagScanner.hasRecentSubmission,
-            {
-                customerId: args.customerId,
-                campaignId: args.campaignId,
-            }
-        );
-
+        // Step 2: Check cooldown
+        const alreadySubmitted = await ctx.runQuery(internal.tagScanner.hasRecentSubmission, {
+            customerId: args.customerId,
+            campaignId: args.campaignId,
+        });
         if (alreadySubmitted) {
-            return { verified: false, reason: "Cooldown active: You can only submit to a campaign once every 7 days." };
+            return { verified: false, reason: "Cooldown active: You can only submit once every 7 days." };
         }
 
-        // Step 3: Check if business has EmbedSocial active
-        if (!business.embedSocialActive || !business.embedSocialWidgetId) {
-            // No EmbedSocial — fall back to trust model (auto-approve for now)
-            if (!apiKey) {
-                await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
-                    campaignId: args.campaignId,
-                    customerId: args.customerId,
-                    businessId: business._id,
-                    instagramHandle: handle,
-                    rewardGrams: campaign.rewardGrams,
-                });
-                return { verified: true, reason: "Auto-approved (verification not configured)" };
-            }
-        }
-
-        // Step 4: Screenshot the scan page via Playwright
-        const scanUrl = `${SCAN_PAGE_BASE}/scan/${business._id}`;
-        let screenshotBase64: string;
-
+        // Step 3: Call Playwright to scan Instagram tagged posts
+        let scanResult: any;
         try {
-            const response = await fetch(`${PLAYWRIGHT_URL}/scan`, {
+            const response = await fetch(`${PLAYWRIGHT_URL}/scan-tagged`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url: scanUrl, waitMs: 10000 }),
+                body: JSON.stringify({
+                    businessHandle: businessIgHandle,
+                    lookForUser: handle,
+                }),
             });
 
             if (!response.ok) {
-                // Playwright not available — fall back to trust model
-                await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
-                    campaignId: args.campaignId,
-                    customerId: args.customerId,
-                    businessId: business._id,
-                    instagramHandle: handle,
-                    rewardGrams: campaign.rewardGrams,
-                });
-                return { verified: true, reason: "Auto-approved (scanner unavailable)" };
+                const errData = await response.json().catch(() => ({}));
+
+                if ((errData as any).needsAuth) {
+                    // Instagram session expired — fall back to auto-approve
+                    console.warn("[scan] Instagram auth expired — auto-approving");
+                    await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
+                        campaignId: args.campaignId,
+                        customerId: args.customerId,
+                        businessId: business._id,
+                        instagramHandle: handle,
+                        rewardGrams: campaign.rewardGrams,
+                    });
+                    return { verified: true, reason: "Auto-approved (Instagram session expired — please update cookies)" };
+                }
+
+                throw new Error(`Playwright service error: ${response.status}`);
             }
 
-            const data = await response.json() as { screenshot: string };
-            screenshotBase64 = data.screenshot;
-        } catch {
-            // Playwright down — fallback
+            scanResult = await response.json();
+        } catch (err: any) {
+            console.error("[scan] Playwright unavailable:", err.message);
+            // Playwright down — fall back to auto-approve with note
             await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
                 campaignId: args.campaignId,
                 customerId: args.customerId,
@@ -281,8 +320,10 @@ export const scanForUser = action({
             return { verified: true, reason: "Auto-approved (scanner offline)" };
         }
 
-        // Step 5: Send to Gemini — check if this user's handle appears
-        if (!apiKey) {
+        // Step 4: Quick check — did Playwright already find the handle in text?
+        const textHandles: string[] = (scanResult.foundHandles ?? []).map((h: string) => h.toLowerCase());
+        if (textHandles.includes(handle)) {
+            console.log(`[scan] Quick match: @${handle} found in extracted text`);
             await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
                 campaignId: args.campaignId,
                 customerId: args.customerId,
@@ -290,72 +331,101 @@ export const scanForUser = action({
                 instagramHandle: handle,
                 rewardGrams: campaign.rewardGrams,
             });
-            return { verified: true, reason: "Auto-approved (AI unavailable)" };
+            return { verified: true, reason: `@${handle} found in ${business.name}'s tagged posts` };
         }
 
-        const prompt = `You are verifying whether the Instagram user "@${handle}" has tagged the business "${business.name}" (@${business.instagramHandle ?? "unknown"}).
+        // Step 5: Send screenshots to Gemini for deeper analysis
+        const hasAiKey = process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY;
+        if (!hasAiKey) {
+            // No AI key — auto-approve since Playwright at least confirmed the page loaded
+            await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
+                campaignId: args.campaignId,
+                customerId: args.customerId,
+                businessId: business._id,
+                instagramHandle: handle,
+                rewardGrams: campaign.rewardGrams,
+            });
+            return { verified: true, reason: "Auto-approved (AI verification not configured)" };
+        }
 
-You are looking at a screenshot of the business's tagged posts widget.
+        // Analyze each screenshot with Gemini
+        const screenshots: string[] = scanResult.screenshots ?? [];
+        if (screenshots.length === 0) {
+            await ctx.runMutation(internal.tagScanner.createRejectedSubmission, {
+                campaignId: args.campaignId,
+                customerId: args.customerId,
+                businessId: business._id,
+                instagramHandle: handle,
+                reason: "Could not load tagged posts — the business may have no tagged posts",
+                rewardGrams: campaign.rewardGrams,
+            });
+            return { verified: false, reason: "No tagged posts found for this business" };
+        }
 
-Your task: check if "@${handle}" appears as the poster of ANY post in this widget.
+        // Send the grid screenshot + first post screenshot to Gemini
+        const screenshotToAnalyze = screenshots[0]; // Grid view
+        const prompt = `You are verifying whether Instagram user "@${handle}" has tagged the business "@${businessIgHandle}" (${business.name}).
 
-Return ONLY a JSON object:
+You are looking at a screenshot of @${businessIgHandle}'s Instagram "Tagged" tab — this shows posts where other users have tagged this business.
+
+Your task: determine if "@${handle}" appears as the author/poster of ANY visible post in this grid.
+
+Look for:
+- Usernames visible on posts, profile pictures, or captions
+- The username "@${handle}" or "${handle}" anywhere in the visible content
+- Any text that matches or closely resembles this username
+
+Return ONLY a JSON object (no markdown, no code fences):
 {
-  "found": true,
-  "allUsernames": ["username1", "username2"],
-  "confidence": 90,
-  "reason": "Found @${handle}'s post in the tagged feed"
+  "found": true/false,
+  "allVisibleUsernames": ["username1", "username2"],
+  "confidence": 0-100,
+  "reason": "brief explanation"
 }
 
 Rules:
-- "found": true if @${handle} posted any of the visible tagged posts
-- "allUsernames": list ALL visible usernames (without @)
-- "confidence": 0-100 how sure you are
-- "reason": brief explanation
-- If the widget hasn't loaded or shows no posts: {"found": false, "allUsernames": [], "confidence": 50, "reason": "Widget did not load"}`;
+- "found": true ONLY if you can see @${handle} as a post author
+- "allVisibleUsernames": list ALL usernames you can see (without @)
+- "confidence": how sure you are (90+ = definitely found, 30-60 = uncertain, <30 = not found)
+- If the page hasn't loaded or shows no posts: {"found": false, "allVisibleUsernames": [], "confidence": 50, "reason": "Page did not load properly"}`;
 
         try {
-            const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://okanagangold.com",
-                },
-                body: JSON.stringify({
-                    model: "google/gemini-2.0-flash-001",
-                    messages: [
-                        {
-                            role: "user",
-                            content: [
-                                { type: "text", text: prompt },
-                                {
-                                    type: "image_url",
-                                    image_url: {
-                                        url: `data:image/png;base64,${screenshotBase64}`,
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                    max_tokens: 500,
-                }),
-            });
-
-            if (!aiResponse.ok) {
-                throw new Error(`OpenRouter ${aiResponse.status}`);
-            }
-
-            const aiData = await aiResponse.json() as any;
-            const raw = aiData.choices?.[0]?.message?.content ?? "";
+            const raw = await analyzeWithGemini(prompt, screenshotToAnalyze);
             const jsonMatch = raw.match(/\{[\s\S]*\}/);
 
             if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
                 const found = parsed.found === true;
                 const reason = parsed.reason ?? (found ? "Found in tagged posts" : "Not found in tagged posts");
+                const confidence = parsed.confidence ?? 50;
 
-                if (found) {
+                // If not found in grid, also check individual post screenshots
+                if (!found && screenshots.length > 1) {
+                    for (let i = 1; i < Math.min(screenshots.length, 4); i++) {
+                        try {
+                            const postPrompt = `Look at this Instagram post screenshot. Is the poster's username "@${handle}" or "${handle}"? Just respond with JSON: {"found": true/false, "username": "visible_username", "confidence": 0-100}`;
+                            const postRaw = await analyzeWithGemini(postPrompt, screenshots[i]);
+                            const postMatch = postRaw.match(/\{[\s\S]*\}/);
+                            if (postMatch) {
+                                const postParsed = JSON.parse(postMatch[0]);
+                                if (postParsed.found === true && postParsed.confidence > 70) {
+                                    await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
+                                        campaignId: args.campaignId,
+                                        customerId: args.customerId,
+                                        businessId: business._id,
+                                        instagramHandle: handle,
+                                        rewardGrams: campaign.rewardGrams,
+                                    });
+                                    return { verified: true, reason: `@${handle} found in tagged post #${i}` };
+                                }
+                            }
+                        } catch {
+                            // Continue checking other posts
+                        }
+                    }
+                }
+
+                if (found && confidence > 60) {
                     await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
                         campaignId: args.campaignId,
                         customerId: args.customerId,
@@ -377,26 +447,18 @@ Rules:
                 }
             }
         } catch (err: any) {
-            console.error("[scanForUser] AI error:", err.message);
+            console.error("[scan] AI analysis error:", err.message);
         }
 
-        // AI failed — fall back to pending for manual review
+        // AI failed — reject with helpful message
         await ctx.runMutation(internal.tagScanner.createRejectedSubmission, {
             campaignId: args.campaignId,
             customerId: args.customerId,
             businessId: business._id,
             instagramHandle: handle,
-            reason: "Verification could not be completed — submitted for manual review",
+            reason: "Verification could not be completed — please try again or upload a screenshot",
             rewardGrams: campaign.rewardGrams,
         });
-        return { verified: false, reason: "Verification could not be completed" };
-    },
-});
-
-// Internal query to get campaign by ID
-export const getCampaignById = internalQuery({
-    args: { campaignId: v.id("campaigns") },
-    handler: async (ctx, args) => {
-        return await ctx.db.get(args.campaignId);
+        return { verified: false, reason: "Verification could not be completed — please try again" };
     },
 });

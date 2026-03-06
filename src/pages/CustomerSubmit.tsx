@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Instagram, Facebook, ShieldCheck, CheckCircle2, XCircle, Loader2, Coins, ArrowRight, Search, Link2, Zap, Eye, Clock, Upload, ImageIcon, X } from 'lucide-react'
-import { useMutation, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
@@ -22,6 +22,7 @@ function CustomerSubmit() {
     const [status, setStatus] = useState<Status>('idle')
     const [selectedCampaignId, setSelectedCampaignId] = useState<Id<"campaigns"> | null>(null)
     const [selectedPlatform, setSelectedPlatform] = useState<'Instagram' | 'Facebook' | null>(null)
+    const [instagramHandle, setInstagramHandle] = useState('')
     const [postUrl, setPostUrl] = useState('')
     const [screenshotFile, setScreenshotFile] = useState<File | null>(null)
     const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null)
@@ -82,6 +83,7 @@ function CustomerSubmit() {
         }
     }, [campaigns, cooldowns, now, selectedCampaignId]);
 
+    const scanForUser = useAction(api.tagScanner.scanForUser)
     const submitMutation = useMutation(api.submissions.submit)
     const generateUploadUrl = useMutation(api.submissions.generateUploadUrl)
 
@@ -94,6 +96,7 @@ function CustomerSubmit() {
         : (selectedCampaign?.verificationMethod ?? 'manual')
 
     const isAutoVerify = effectiveMethod === 'auto'
+    const handleClean = instagramHandle.trim().replace(/^@/, '')
 
     // Available platforms for selected campaign
     const isCampaignAuto = selectedCampaign?.verificationMethod === 'auto'
@@ -101,9 +104,9 @@ function CustomerSubmit() {
         (p: string) => isCampaignAuto ? p === 'Instagram' : (p === 'Instagram' || p === 'Facebook')
     ) ?? []
 
-    // Ready check: need platform + (screenshot for auto OR url for manual)
+    // Ready check: need platform + (handle/screenshot for auto OR url for manual)
     const isReady = selectedCampaignId && selectedPlatform && convexUser && (
-        isAutoVerify ? !!screenshotFile : postUrl.trim().length > 10
+        isAutoVerify ? (handleClean.length >= 2 || !!screenshotFile) : postUrl.trim().length > 10
     )
 
     // Handle file selection
@@ -145,35 +148,46 @@ function CustomerSubmit() {
         setStatus('verifying')
 
         try {
-            let imageStorageId: Id<"_storage"> | undefined
-
-            // Upload screenshot if provided
-            if (screenshotFile) {
-                const uploadUrl = await generateUploadUrl()
-                const uploadResp = await fetch(uploadUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': screenshotFile.type },
-                    body: screenshotFile,
+            if (isAutoVerify && handleClean.length >= 2) {
+                // PRIMARY: Playwright scans Instagram tagged posts
+                const result = await scanForUser({
+                    campaignId: selectedCampaignId,
+                    customerId: convexUser._id,
+                    instagramHandle: handleClean,
                 })
-                const { storageId } = await uploadResp.json()
-                imageStorageId = storageId
-            }
 
-            // Submit — the backend automatically triggers AI verification for auto campaigns
-            await submitMutation({
-                campaignId: selectedCampaignId,
-                customerId: convexUser._id,
-                postUrl: postUrl.trim() || undefined,
-                imageStorageId,
-                submissionMethod: imageStorageId ? 'upload' : 'url',
-                platform: selectedPlatform,
-            })
-
-            if (isAutoVerify) {
-                // AI verification happens server-side, show "verifying" then transition
-                setEarnedGrams(selectedCampaign.rewardGrams)
-                setStatus('pending')
+                if (result.verified) {
+                    setEarnedGrams(selectedCampaign.rewardGrams)
+                    setResultReason(result.reason)
+                    setStatus('approved')
+                } else {
+                    setResultReason(result.reason)
+                    setStatus('rejected')
+                }
             } else {
+                // FALLBACK: Screenshot upload or manual URL submission
+                let imageStorageId: Id<"_storage"> | undefined
+
+                if (screenshotFile) {
+                    const uploadUrl = await generateUploadUrl()
+                    const uploadResp = await fetch(uploadUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': screenshotFile.type },
+                        body: screenshotFile,
+                    })
+                    const { storageId } = await uploadResp.json()
+                    imageStorageId = storageId
+                }
+
+                await submitMutation({
+                    campaignId: selectedCampaignId,
+                    customerId: convexUser._id,
+                    postUrl: postUrl.trim() || undefined,
+                    imageStorageId,
+                    submissionMethod: imageStorageId ? 'upload' : 'url',
+                    platform: selectedPlatform,
+                })
+
                 setEarnedGrams(selectedCampaign.rewardGrams)
                 setStatus('pending')
             }
@@ -187,6 +201,7 @@ function CustomerSubmit() {
         setStatus('idle')
         setSelectedCampaignId(null)
         setSelectedPlatform(null)
+        setInstagramHandle('')
         setPostUrl('')
         setScreenshotFile(null)
         setScreenshotPreview(null)
@@ -355,55 +370,69 @@ function CustomerSubmit() {
                                         <>
                                             <label className="submit-label">
                                                 <span className="step-number">3</span>
-                                                Upload Screenshot of Your Post
+                                                Your Instagram Handle
                                             </label>
-                                            <p className="text-tertiary" style={{ fontSize: '0.8125rem', marginBottom: 'var(--space-3)' }}>
-                                                Take a screenshot of your {selectedPlatform} post showing the business tag and upload it below.
+                                            <div className="handle-input-wrap">
+                                                <Instagram size={18} className="handle-icon" />
+                                                <input
+                                                    type="text"
+                                                    className="input handle-input"
+                                                    placeholder="your_username"
+                                                    value={instagramHandle}
+                                                    onChange={(e) => setInstagramHandle(e.target.value)}
+                                                />
+                                            </div>
+                                            <p className="text-tertiary" style={{ fontSize: '0.75rem', marginTop: 'var(--space-2)' }}>
+                                                Must match the account you used to tag the business
                                             </p>
 
-                                            {!screenshotPreview ? (
-                                                <div
-                                                    className={`screenshot-dropzone ${dragActive ? 'drag-active' : ''}`}
-                                                    onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
-                                                    onDragLeave={() => setDragActive(false)}
-                                                    onDrop={handleDrop}
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                >
-                                                    <input
-                                                        ref={fileInputRef}
-                                                        type="file"
-                                                        accept="image/*"
-                                                        style={{ display: 'none' }}
-                                                        onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                                                    />
-                                                    <Upload size={32} style={{ color: 'var(--text-tertiary)', marginBottom: '8px' }} />
-                                                    <p style={{ color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.9375rem' }}>
-                                                        Drop screenshot here or tap to upload
-                                                    </p>
-                                                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem', marginTop: '4px' }}>
-                                                        JPG, PNG, or HEIC • Max 10MB
-                                                    </p>
-                                                </div>
-                                            ) : (
-                                                <div className="screenshot-preview">
-                                                    <img src={screenshotPreview} alt="Screenshot preview" />
-                                                    <button
-                                                        className="screenshot-remove"
-                                                        onClick={(e) => { e.stopPropagation(); clearScreenshot() }}
+                                            {/* Optional: Screenshot fallback */}
+                                            <div style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-4)' }}>
+                                                <p className="text-tertiary" style={{ fontSize: '0.75rem', marginBottom: 'var(--space-2)' }}>
+                                                    Or upload a screenshot as proof (optional)
+                                                </p>
+                                                {!screenshotPreview ? (
+                                                    <div
+                                                        className={`screenshot-dropzone ${dragActive ? 'drag-active' : ''}`}
+                                                        style={{ padding: 'var(--space-6) var(--space-4)' }}
+                                                        onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
+                                                        onDragLeave={() => setDragActive(false)}
+                                                        onDrop={handleDrop}
+                                                        onClick={() => fileInputRef.current?.click()}
                                                     >
-                                                        <X size={16} />
-                                                    </button>
-                                                    <div className="screenshot-info">
-                                                        <ImageIcon size={14} />
-                                                        <span>{screenshotFile?.name}</span>
+                                                        <input
+                                                            ref={fileInputRef}
+                                                            type="file"
+                                                            accept="image/*"
+                                                            style={{ display: 'none' }}
+                                                            onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                                                        />
+                                                        <Upload size={20} style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }} />
+                                                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>
+                                                            Drop screenshot here or tap to upload
+                                                        </p>
                                                     </div>
-                                                </div>
-                                            )}
+                                                ) : (
+                                                    <div className="screenshot-preview">
+                                                        <img src={screenshotPreview} alt="Screenshot preview" />
+                                                        <button
+                                                            className="screenshot-remove"
+                                                            onClick={(e) => { e.stopPropagation(); clearScreenshot() }}
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                        <div className="screenshot-info">
+                                                            <ImageIcon size={14} />
+                                                            <span>{screenshotFile?.name}</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
 
                                             <div className="ai-info" style={{ marginTop: 'var(--space-3)' }}>
                                                 <Zap size={14} style={{ color: 'var(--gold)' }} />
                                                 <span>
-                                                    Our AI instantly analyzes your screenshot to verify the business tag. Gold is credited in ~30 seconds.
+                                                    Our AI scans the business's Instagram for your tag. Gold is credited in ~30 seconds.
                                                 </span>
                                             </div>
                                         </>
@@ -449,7 +478,7 @@ function CustomerSubmit() {
                                     {isAutoVerify ? (
                                         <>
                                             <ShieldCheck size={18} />
-                                            Upload & Verify My Post
+                                            I Tagged Them — Verify My Post
                                             <ArrowRight size={16} />
                                         </>
                                     ) : (
@@ -467,7 +496,7 @@ function CustomerSubmit() {
                                 <div className="how-it-works" style={{ marginTop: 'var(--space-8)' }}>
                                     <p className="text-tertiary" style={{ fontSize: '0.8125rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                                         {isAutoVerify
-                                            ? <><Zap size={14} style={{ color: 'var(--gold-dark)' }} /> Upload a screenshot of your post. AI verifies it instantly.</>
+                                            ? <><Zap size={14} style={{ color: 'var(--gold-dark)' }} /> We'll scan the business's tagged posts to verify instantly. Gold is credited in ~30 seconds.</>
                                             : <><Eye size={14} /> The business will review your post. If no response in 24h, you're auto-approved.</>}
                                     </p>
                                 </div>
