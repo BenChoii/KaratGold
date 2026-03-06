@@ -19,7 +19,7 @@ function BusinessDashboard() {
     const [fundCurrency, setFundCurrency] = useState<'gold' | 'cad'>('gold')
     const [funding, setFunding] = useState(false)
 
-    const fundPoolMutation = useMutation(api.businesses.fundPool)
+    const createCheckoutSession = useAction(api.stripe.createCheckoutSession)
 
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
     const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
@@ -95,21 +95,17 @@ function BusinessDashboard() {
                 return
             }
 
-            // Simulated MoonPay SDK Flow (Direct Ledger Funding)
-            await new Promise(resolve => setTimeout(resolve, 1500))
-
-            await fundPoolMutation({
+            const checkoutUrl = await createCheckoutSession({
                 businessId: business._id,
-                amount: parseFloat(fundAmount),
-                currency: fundCurrency,
+                cadAmount,
+                successUrl: `${window.location.origin}/dashboard?fund_success=true`,
+                cancelUrl: `${window.location.origin}/dashboard?fund_canceled=true`,
             })
 
-            setShowFundDialog(false)
-            setFundAmount('')
-            setFunding(false)
+            window.location.href = checkoutUrl
         } catch (err: any) {
             console.error('Funding error:', err)
-            alert(err.message || "Failed to process MoonPay funding.")
+            alert(err.message || "Failed to initiate funding session.")
             setFunding(false)
         }
     }
