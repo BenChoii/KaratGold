@@ -177,54 +177,82 @@ function GoldSparkline() {
 
 /* ===== MAP CARD ===== */
 function MapCard() {
-
     return (
         <div className="scene-map hiw-card">
             <div className="map-card-inner">
-                <div className="map-search-bar">
-                    <Search size={14} className="text-tertiary" />
-                    <span>Search businesses, trades, or locations...</span>
+                {/* App bar */}
+                <div className="mock-app-bar">
+                    <span className="mock-app-title">Explore</span>
+                    <div className="mock-app-filters">
+                        <span className="mock-filter active">Near Me</span>
+                        <span className="mock-filter">Popular</span>
+                        <span className="mock-filter">New</span>
+                    </div>
                 </div>
 
-                <div className="map-pins-container">
+                {/* Map area with gradient background */}
+                <div className="mock-map-area">
+                    <div className="mock-map-gradient" />
+                    {/* Floating pins */}
                     <motion.div
-                        className="map-pin-badge"
+                        className="mock-map-pin"
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring" }}
+                        transition={{ delay: 0.3, type: "spring" }}
                         viewport={{ once: true }}
-                        style={{ top: '25%', left: '20%' }}
+                        style={{ top: '20%', left: '25%' }}
                     >
-                        <div className="map-pin-pulse" />
-                        <span className="pin-title">Café</span>
-                        <span className="pin-reward">0.011 oz</span>
+                        <div className="mock-pin-dot" />
+                        <span>0.011 oz</span>
                     </motion.div>
+                    <motion.div
+                        className="mock-map-pin"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.6, type: "spring" }}
+                        viewport={{ once: true }}
+                        style={{ top: '45%', right: '20%' }}
+                    >
+                        <div className="mock-pin-dot" />
+                        <span>0.016 oz</span>
+                    </motion.div>
+                    <motion.div
+                        className="mock-map-pin"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.9, type: "spring" }}
+                        viewport={{ once: true }}
+                        style={{ bottom: '30%', left: '40%' }}
+                    >
+                        <div className="mock-pin-dot" />
+                        <span>0.008 oz</span>
+                    </motion.div>
+                </div>
 
-                    <motion.div
-                        className="map-pin-badge"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.5, type: "spring" }}
-                        viewport={{ once: true }}
-                        style={{ top: '55%', right: '15%' }}
-                    >
-                        <div className="map-pin-pulse" style={{ animationDelay: '1s' }} />
-                        <span className="pin-title">Brewery</span>
-                        <span className="pin-reward">0.016 oz</span>
-                    </motion.div>
-
-                    <motion.div
-                        className="map-pin-badge"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8, type: "spring" }}
-                        viewport={{ once: true }}
-                        style={{ bottom: '20%', left: '35%' }}
-                    >
-                        <div className="map-pin-pulse" style={{ animationDelay: '2s' }} />
-                        <span className="pin-title">Barber</span>
-                        <span className="pin-reward">0.008 oz</span>
-                    </motion.div>
+                {/* Bottom listing cards */}
+                <div className="mock-listings">
+                    <div className="mock-listing-card">
+                        <div className="mock-listing-avatar">☕</div>
+                        <div className="mock-listing-info">
+                            <span className="mock-listing-name">Bean Scene Café</span>
+                            <span className="mock-listing-meta">0.8 km · Instagram</span>
+                        </div>
+                        <div className="mock-listing-reward">
+                            <span className="mock-reward-amount">0.011 oz</span>
+                            <span className="mock-reward-cad">~$76</span>
+                        </div>
+                    </div>
+                    <div className="mock-listing-card">
+                        <div className="mock-listing-avatar">🍺</div>
+                        <div className="mock-listing-info">
+                            <span className="mock-listing-name">BNA Brewing</span>
+                            <span className="mock-listing-meta">1.2 km · IG + FB</span>
+                        </div>
+                        <div className="mock-listing-reward">
+                            <span className="mock-reward-amount">0.016 oz</span>
+                            <span className="mock-reward-cad">~$111</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
