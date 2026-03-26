@@ -1,53 +1,57 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { ClerkProvider, useAuth } from '@clerk/clerk-react'
-import { ConvexProviderWithClerk } from 'convex/react-clerk'
-import { ConvexReactClient } from 'convex/react'
+import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
+import { PhantomWalletAdapter, SolflareWalletAdapter, BackpackWalletAdapter } from '@solana/wallet-adapter-wallets'
+import { clusterApiUrl } from '@solana/web3.js'
 import App from './App'
 import './index.css'
+import '@solana/wallet-adapter-react-ui/styles.css'
 
-// Pattern: ClerkConvexProvider to prevent silent crash on Vercel deployment if ENV vars are missing
-function ClerkConvexProvider({ children }: { children: React.ReactNode }) {
+const endpoint = clusterApiUrl('devnet')
+const wallets = [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
+    new BackpackWalletAdapter(),
+]
+
+function SolanaConvexProvider({ children }: { children: React.ReactNode }) {
     const convexUrl = import.meta.env.VITE_CONVEX_URL
-    const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
     // Instantiate Convex only if URL is available
     const convex = convexUrl ? new ConvexReactClient(convexUrl) : null
 
-    // If environment variables are missing (like on Vercel free tier preview builds without keys attached),
-    // degrade gracefully by rendering a "Missing Configuration" screen rather than a silent blank React root crash
-    if (!clerkPubKey || !convex) {
+    if (!convex) {
         return (
             <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'sans-serif' }}>
                 <h2>Deployment Configuration Missing</h2>
-                <p>The Vercel environment variables (VITE_CLERK_PUBLISHABLE_KEY or VITE_CONVEX_URL) are not configured for this deployment environment.</p>
-                <p>Please add them to your Vercel Project Settings and trigger a Redeploy.</p>
+                <p>The Vercel environment variable (VITE_CONVEX_URL) is not configured for this deployment environment.</p>
+                <p>Please add it to your Vercel Project Settings and trigger a Redeploy.</p>
             </div>
         )
     }
 
     return (
-        <ClerkProvider
-            publishableKey={clerkPubKey}
-            signInForceRedirectUrl="/role"
-            signUpForceRedirectUrl="/role"
-            afterSignOutUrl="/"
-        >
-            <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-                {children}
-            </ConvexProviderWithClerk>
-        </ClerkProvider>
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect>
+                <WalletModalProvider>
+                    <ConvexProvider client={convex}>
+                        {children}
+                    </ConvexProvider>
+                </WalletModalProvider>
+            </WalletProvider>
+        </ConnectionProvider>
     )
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <ClerkConvexProvider>
+            <SolanaConvexProvider>
                 <App />
-            </ClerkConvexProvider>
+            </SolanaConvexProvider>
         </BrowserRouter>
     </React.StrictMode>
 )
-
