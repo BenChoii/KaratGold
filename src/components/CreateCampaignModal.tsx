@@ -306,10 +306,10 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                             onClick={() => setCurrencyMode('usd')}
                                             style={{ flex: 1 }}
                                         >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill={currencyMode === 'cad' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill={currencyMode === 'usd' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
                                                 <path d="M12 2v20" />
-                                                <path d="M12 2l-3 6-5-2 4 5-3 6 7-2 7 2-3-6 4-5-5 2-3-6z" />
-                                            </svg> CAD (dollars)
+                                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                            </svg> USD (dollars)
                                         </button>
                                     </div>
 
@@ -330,7 +330,7 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                                         <span className="cm-unit">ounces</span>
                                                     </div>
                                                     <p className="cm-hint">
-                                                        ≈ ${(form.rewardGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} CAD per post
+                                                        ≈ ${(form.rewardGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} USD per post
                                                     </p>
                                                 </>
                                             ) : (
@@ -341,10 +341,10 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                                             className="input"
                                                             min="1"
                                                             step="0.50"
-                                                            value={form.rewardCad}
-                                                            onChange={e => setForm(f => ({ ...f, rewardCad: parseFloat(e.target.value) || 0 }))}
+                                                            value={form.rewardUsd}
+                                                            onChange={e => setForm(f => ({ ...f, rewardUsd: parseFloat(e.target.value) || 0 }))}
                                                         />
-                                                        <span className="cm-unit">CAD</span>
+                                                        <span className="cm-unit">USD</span>
                                                     </div>
                                                     <p className="cm-hint">
                                                         ≈ {rewardGrams.toFixed(5)} oz gold at ${GOLD_PRICE_PER_OUNCE.toFixed(2)}/oz
@@ -353,7 +353,7 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                             )}
                                             {!meetsMinimum && (
                                                 <p className="cm-hint" style={{ color: 'var(--red, #ef4444)' }}>
-                                                    ⚠️ Minimum reward is $10 CAD/post (≈ {MIN_REWARD_OUNCES.toFixed(4)} oz)
+                                                    ⚠️ Minimum reward is $10 USD/post (≈ {MIN_REWARD_OUNCES.toFixed(4)} oz)
                                                 </p>
                                             )}
                                         </div>
@@ -376,12 +376,12 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                     {/* Cost Summary */}
                                     <div className={`cm-cost-summary ${!hasEnoughGold ? 'insufficient' : ''}`}>
                                         <div className="cm-cost-row">
-                                            <span>Budget ({form.maxSubmissions} posts × ${rewardCad.toFixed(2)})</span>
-                                            <span>${budgetCad.toFixed(2)} CAD</span>
+                                            <span>Budget ({form.maxSubmissions} posts × ${rewardUsd.toFixed(2)})</span>
+                                            <span>${budgetUsd.toFixed(2)} USD</span>
                                         </div>
                                         <div className="cm-cost-row" style={{ color: 'var(--text-tertiary)', fontSize: '0.8125rem' }}>
                                             <span>Platform Fee (20%)</span>
-                                            <span>${feeCad.toFixed(2)} CAD ({feeGrams.toFixed(4)} oz)</span>
+                                            <span>${feeUsd.toFixed(2)} USD ({feeGrams.toFixed(4)} oz)</span>
                                         </div>
                                         <div className="cm-cost-row" style={{ fontWeight: 700, borderTop: '1px solid var(--border)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
                                             <span>Total Campaign Cost</span>
@@ -389,7 +389,7 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                                 <Coins size={16} />
                                                 {totalCost.toFixed(3)} oz
                                                 <span className="cm-cost-cad">
-                                                    (${(totalCost * GOLD_PRICE_PER_OUNCE).toFixed(2)} CAD)
+                                                    (${(totalCost * GOLD_PRICE_PER_OUNCE).toFixed(2)} USD)
                                                 </span>
                                             </span>
                                         </div>
@@ -399,7 +399,7 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                         </div>
                                         {!meetsBudgetMin && (
                                             <p className="cm-cost-warning">
-                                                Minimum campaign budget is $100 CAD. Current: ${budgetCad.toFixed(2)}. Increase reward or number of posts.
+                                                Minimum campaign budget is $100 USD. Current: ${budgetUsd.toFixed(2)}. Increase reward or number of posts.
                                             </p>
                                         )}
                                         {meetsBudgetMin && !hasEnoughGold && (
