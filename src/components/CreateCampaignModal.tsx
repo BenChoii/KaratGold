@@ -22,40 +22,40 @@ const PLATFORMS = [
 function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClick }: CreateCampaignModalProps) {
     const createCampaign = useMutation(api.campaigns.create)
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
-    const MIN_REWARD_CAD = 10
-    const MIN_REWARD_OUNCES = Math.ceil((MIN_REWARD_CAD / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
-    const MIN_BUDGET_CAD = 100
+    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgUsd ?? 2900
+    const MIN_REWARD_USD = 10
+    const MIN_REWARD_OUNCES = Math.ceil((MIN_REWARD_USD / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
+    const MIN_BUDGET_USD = 100
     const PLATFORM_FEE_RATE = 0.20
 
     const [form, setForm] = useState({
         title: '',
         description: '',
         rewardGrams: MIN_REWARD_OUNCES,
-        rewardCad: MIN_REWARD_CAD,
+        rewardUsd: MIN_REWARD_USD,
         maxSubmissions: 10,
         platforms: ['Instagram'] as string[],
         requirements: [] as string[],
         verificationMethod: 'auto' as 'auto' | 'manual',
     })
-    const [currencyMode, setCurrencyMode] = useState<'gold' | 'cad'>('cad')
+    const [currencyMode, setCurrencyMode] = useState<'gold' | 'usd'>('usd')
     const [newRequirement, setNewRequirement] = useState('')
     const [submitting, setSubmitting] = useState(false)
     const [success, setSuccess] = useState(false)
 
-    const rewardGrams = currencyMode === 'cad'
-        ? Math.round((form.rewardCad / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
+    const rewardGrams = currencyMode === 'usd'
+        ? Math.round((form.rewardUsd / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
         : form.rewardGrams
-    const rewardCad = currencyMode === 'gold'
+    const rewardUsd = currencyMode === 'gold'
         ? form.rewardGrams * GOLD_PRICE_PER_OUNCE
-        : form.rewardCad
-    const budgetCad = rewardCad * form.maxSubmissions
-    const feeCad = Math.round(budgetCad * PLATFORM_FEE_RATE * 100) / 100
-    const feeGrams = Math.round((feeCad / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
+        : form.rewardUsd
+    const budgetUsd = rewardUsd * form.maxSubmissions
+    const feeUsd = Math.round(budgetUsd * PLATFORM_FEE_RATE * 100) / 100
+    const feeGrams = Math.round((feeUsd / GOLD_PRICE_PER_OUNCE) * 100000) / 100000
     const totalCost = rewardGrams * form.maxSubmissions + feeGrams
     const hasEnoughGold = goldPool >= totalCost
-    const meetsMinimum = rewardCad >= MIN_REWARD_CAD
-    const meetsBudgetMin = budgetCad >= MIN_BUDGET_CAD
+    const meetsMinimum = rewardUsd >= MIN_REWARD_USD
+    const meetsBudgetMin = budgetUsd >= MIN_BUDGET_USD
     const isValid = form.title && form.description && form.platforms.length > 0 && form.requirements.length > 0 && hasEnoughGold && meetsMinimum && meetsBudgetMin
 
     const togglePlatform = (id: string) => {
@@ -106,19 +106,16 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                 maxSubmissions: form.maxSubmissions,
                 platforms: form.platforms,
                 requirements: form.requirements,
-                currencyMode,
-                cadBudget: currencyMode === 'cad' ? form.rewardCad * form.maxSubmissions : undefined,
-                cadRewardPerPost: currencyMode === 'cad' ? form.rewardCad : undefined,
                 verificationMethod: form.verificationMethod,
             })
             setSuccess(true)
             setTimeout(() => {
                 setSuccess(false)
                 setForm({
-                    title: '', description: '', rewardGrams: MIN_REWARD_OUNCES, rewardCad: MIN_REWARD_CAD,
+                    title: '', description: '', rewardGrams: MIN_REWARD_OUNCES, rewardUsd: MIN_REWARD_USD,
                     maxSubmissions: 10, platforms: ['Instagram'], requirements: [], verificationMethod: 'auto'
                 })
-                setCurrencyMode('cad')
+                setCurrencyMode('usd')
                 onClose()
             }, 1800)
         } catch (err) {
@@ -305,8 +302,8 @@ function CreateCampaignModal({ isOpen, onClose, businessId, goldPool, onFundClic
                                         </button>
                                         <button
                                             type="button"
-                                            className={`btn btn-sm ${currencyMode === 'cad' ? 'btn-primary' : 'btn-ghost'}`}
-                                            onClick={() => setCurrencyMode('cad')}
+                                            className={`btn btn-sm ${currencyMode === 'usd' ? 'btn-primary' : 'btn-ghost'}`}
+                                            onClick={() => setCurrencyMode('usd')}
                                             style={{ flex: 1 }}
                                         >
                                             <svg width="14" height="14" viewBox="0 0 24 24" fill={currencyMode === 'cad' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>

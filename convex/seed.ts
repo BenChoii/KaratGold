@@ -14,17 +14,15 @@ export const run = mutation({
 
         // Add back gold price so it doesn't break UI
         await ctx.db.insert("goldPrice", {
-            pricePerGram: 237.44,
-            paxgCad: 7383.84,
-            usdCadRate: 0,
-            currency: "CAD",
+            pricePerGram: 93.47,
+            paxgUsd: 2908,
             source: "seed",
             fetchedAt: Date.now(),
         });
 
         // Create demo customer
         const customerId = await ctx.db.insert("users", {
-            clerkId: "demo_customer",
+            walletAddress: "DemoCustomer11111111111111111111111111111111",
             name: "Alex Chen",
             email: "alex@example.com",
             role: "customer",
@@ -36,7 +34,7 @@ export const run = mutation({
 
         // Create demo business owner
         const ownerId = await ctx.db.insert("users", {
-            clerkId: "demo_business",
+            walletAddress: "DemoBusiness11111111111111111111111111111111",
             name: "Sarah Mitchell",
             email: "sarah@bluemountaincoffee.com",
             role: "business",

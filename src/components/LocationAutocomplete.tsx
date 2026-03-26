@@ -2,8 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MapPin, Loader2, X } from 'lucide-react'
 import './LocationAutocomplete.css'
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
-
 interface LocationResult {
     id: string
     placeName: string
@@ -46,7 +44,7 @@ function LocationAutocomplete({ value, onChange, placeholder = 'Search for an ad
     }, [])
 
     const searchLocations = useCallback(async (searchQuery: string) => {
-        if (!searchQuery || searchQuery.length < 3 || !MAPBOX_TOKEN) {
+        if (!searchQuery || searchQuery.length < 3) {
             setResults([])
             return
         }
@@ -54,22 +52,28 @@ function LocationAutocomplete({ value, onChange, placeholder = 'Search for an ad
         setLoading(true)
         try {
             const encoded = encodeURIComponent(searchQuery)
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?access_token=${MAPBOX_TOKEN}&country=ca&types=address,poi,place,locality,neighborhood&limit=5&proximity=-119.4960,49.8880`
+            // Nominatim — OpenStreetMap's free geocoding API, no API key required
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&countrycodes=ca&limit=5&addressdetails=1`
 
-            const res = await fetch(url)
+            const res = await fetch(url, {
+                headers: {
+                    // Nominatim requires a valid User-Agent for their usage policy
+                    'Accept': 'application/json',
+                },
+            })
             const data = await res.json()
 
-            if (data.features) {
-                setResults(data.features.map((f: any) => ({
-                    id: f.id,
-                    placeName: f.place_name,
-                    latitude: f.center[1],
-                    longitude: f.center[0],
+            if (Array.isArray(data)) {
+                setResults(data.map((item: any) => ({
+                    id: String(item.place_id),
+                    placeName: item.display_name,
+                    latitude: parseFloat(item.lat),
+                    longitude: parseFloat(item.lon),
                 })))
                 setIsOpen(true)
             }
         } catch (err) {
-            console.error('Mapbox geocoding error:', err)
+            console.error('Nominatim geocoding error:', err)
         }
         setLoading(false)
     }, [])
@@ -80,9 +84,9 @@ function LocationAutocomplete({ value, onChange, placeholder = 'Search for an ad
         setSelected(false)
         onChange(val, null, null) // Clear lat/lng when typing
 
-        // Debounce API calls
+        // Debounce API calls (Nominatim usage policy: max 1 req/sec)
         if (debounceRef.current) clearTimeout(debounceRef.current)
-        debounceRef.current = setTimeout(() => searchLocations(val), 300)
+        debounceRef.current = setTimeout(() => searchLocations(val), 500)
     }
 
     const handleSelect = (result: LocationResult) => {
@@ -135,7 +139,7 @@ function LocationAutocomplete({ value, onChange, placeholder = 'Search for an ad
                         </button>
                     ))}
                     <div className="location-attribution">
-                        Powered by Mapbox
+                        Powered by OpenStreetMap Nominatim
                     </div>
                 </div>
             )}

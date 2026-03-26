@@ -3,26 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUpRight, TrendingUp, Clock, CheckCircle2, X, ShieldCheck, ExternalLink, Coins, HelpCircle, Wallet } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { api } from '../../convex/_generated/api'
 import { AnimatedCounter } from '../components/AnimatedCounter'
 import './CustomerRewards.css'
 
 
 function CustomerRewards() {
-    const { user: clerkUser } = useUser()
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
     const [showCashout, setShowCashout] = useState(false)
     const [cashoutAmount, setCashoutAmount] = useState('')
-    const [walletAddress, setWalletAddress] = useState('')
+    const [destinationWallet, setDestinationWallet] = useState('')
     const [cashoutLoading, setCashoutLoading] = useState(false)
     const cashOut = useMutation(api.rewards.cashOut)
 
-    const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
-
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
 
     const balance = useQuery(
         api.rewards.getBalance,
@@ -35,19 +33,18 @@ function CustomerRewards() {
     )
 
     const handleCryptoCashout = async () => {
-        const cadAmt = parseFloat(cashoutAmount)
-        if (!cadAmt || cadAmt <= 0 || cadAmt > (balance?.balanceCAD ?? 0) || !convexUser || !walletAddress.trim()) return
+        const ozAmt = parseFloat(cashoutAmount)
+        if (!ozAmt || ozAmt <= 0 || ozAmt > (balance?.goldBalance ?? 0) || !convexUser || !destinationWallet.trim()) return
         setCashoutLoading(true)
         try {
-            const goldAmt = cadAmt / GOLD_PRICE_PER_OUNCE
             await cashOut({
                 userId: convexUser._id,
-                amount: goldAmt,
-                walletAddress: walletAddress.trim()
+                amount: ozAmt,
+                walletAddress: destinationWallet.trim()
             })
             setShowCashout(false)
             setCashoutAmount('')
-            setWalletAddress('')
+            setDestinationWallet('')
         } catch (err) {
             console.error('Cashout error:', err)
         } finally {
@@ -84,9 +81,8 @@ function CustomerRewards() {
                         <AnimatedCounter value={balance.goldBalance} decimals={3} suffix=" oz" />
                     </h1>
                     <p className="balance-ounces">
-                        $<AnimatedCounter value={balance.balanceCAD} decimals={2} /> CAD at today's price
+                        = <AnimatedCounter value={balance.goldBalance} decimals={4} /> PAXG
                     </p>
-                    <p className="balance-spot">1 oz = ${GOLD_PRICE_PER_OUNCE.toFixed(2)} CAD</p>
 
                     <div className="balance-chart">
                         <svg viewBox="0 0 400 80" className="trend-line">
@@ -166,7 +162,7 @@ function CustomerRewards() {
                             <AnimatedCounter value={balance.totalCashedOut} decimals={3} suffix=" oz" />
                         </p>
                         <span className="text-body-sm" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
-                            $<AnimatedCounter value={balance.totalCashedOutCAD} decimals={2} /> withdrawn
+                            <AnimatedCounter value={balance.totalCashedOut} decimals={3} suffix=" PAXG" /> withdrawn
                         </span>
                     </motion.div>
                 </motion.div>
@@ -250,23 +246,22 @@ function CustomerRewards() {
                             <div className="cashout-modal-body">
                                 <p className="stat-label">Available Balance</p>
                                 <p className="cashout-available">{balance.goldBalance.toFixed(3)} oz</p>
-                                <p className="stat-secondary">${balance.balanceCAD} CAD</p>
 
                                 <div className="cashout-input-group">
-                                    <label className="stat-label">Amount (CAD)</label>
+                                    <label className="stat-label">Amount (oz gold)</label>
                                     <input
                                         type="number"
                                         className="cashout-input"
-                                        placeholder="0.00"
-                                        min="0.01"
-                                        step="0.01"
-                                        max={balance.balanceCAD}
+                                        placeholder="0.000"
+                                        min="0.001"
+                                        step="0.001"
+                                        max={balance.goldBalance}
                                         value={cashoutAmount}
                                         onChange={(e) => setCashoutAmount(e.target.value)}
                                     />
                                     <button
                                         className="cashout-max-btn"
-                                        onClick={() => setCashoutAmount(balance.balanceCAD.toString())}
+                                        onClick={() => setCashoutAmount(balance.goldBalance.toString())}
                                     >
                                         Max
                                     </button>
@@ -277,7 +272,7 @@ function CustomerRewards() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
                                             <span>PAXG to send</span>
                                             <span style={{ color: 'var(--gold)', fontWeight: 600 }}>
-                                                {(parseFloat(cashoutAmount) / GOLD_PRICE_PER_OUNCE).toFixed(4)} oz
+                                                {parseFloat(cashoutAmount).toFixed(4)} PAXG
                                             </span>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
@@ -295,8 +290,8 @@ function CustomerRewards() {
                                         type="text"
                                         className="cashout-input"
                                         placeholder="Your Solana wallet address"
-                                        value={walletAddress}
-                                        onChange={(e) => setWalletAddress(e.target.value)}
+                                        value={destinationWallet}
+                                        onChange={(e) => setDestinationWallet(e.target.value)}
                                         style={{ fontSize: '0.95rem' }}
                                     />
                                     <p className="text-body-sm" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-2)' }}>
@@ -327,14 +322,14 @@ function CustomerRewards() {
                                 <button
                                     className="btn btn-secondary"
                                     style={{ flex: '0 0 auto' }}
-                                    onClick={() => { setShowCashout(false); setCashoutAmount(''); setWalletAddress('') }}
+                                    onClick={() => { setShowCashout(false); setCashoutAmount(''); setDestinationWallet('') }}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     className="btn btn-primary btn-lg"
                                     style={{ flex: 1 }}
-                                    disabled={!cashoutAmount || parseFloat(cashoutAmount) <= 0 || parseFloat(cashoutAmount) > balance.balanceCAD || !walletAddress.trim() || cashoutLoading}
+                                    disabled={!cashoutAmount || parseFloat(cashoutAmount) <= 0 || parseFloat(cashoutAmount) > balance.goldBalance || !destinationWallet.trim() || cashoutLoading}
                                     onClick={handleCryptoCashout}
                                 >
                                     {cashoutLoading ? 'Processing...' : 'Send PAXG to Wallet'}

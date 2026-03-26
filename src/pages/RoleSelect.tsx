@@ -2,17 +2,18 @@ import { motion } from 'framer-motion'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Users, Briefcase, ArrowRight, Coins, BarChart3 } from 'lucide-react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import './RoleSelect.css'
 
 function RoleSelect() {
     const navigate = useNavigate()
-    const { user: clerkUser } = useUser()
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
     const updateRole = useMutation(api.users.updateRole)
 
     // If user already has a role, redirect

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Coins, Users, ArrowRight, MapPin, Navigation, Loader2, Truck, Instagram, Facebook, Zap, Eye, Clock, List, Map as MapIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useQuery } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { api } from '../../convex/_generated/api'
 import { DirectoryMap, type MapCampaign } from '../components/DirectoryMap'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -35,10 +35,11 @@ const CATEGORY_CHIPS = [
 ]
 
 function CustomerExplore() {
-    const { user: clerkUser } = useUser()
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
     const cooldowns = useQuery(api.submissions.getActiveCooldowns, {
         customerId: convexUser?._id,
     })
@@ -67,14 +68,15 @@ function CustomerExplore() {
                     setUserLng(pos.coords.longitude)
                     setLocationStatus('granted')
 
-                    // Reverse geocode to get city name
+                    // Reverse geocode to get city name using Nominatim (free, no API key)
                     try {
                         const res = await fetch(
-                            `https://api.mapbox.com/geocoding/v5/mapbox.places/${pos.coords.longitude},${pos.coords.latitude}.json?types=place&access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=10`
                         )
                         const data = await res.json()
-                        if (data.features?.[0]?.text) {
-                            setUserCity(data.features[0].text)
+                        const city = data.address?.city || data.address?.town || data.address?.village
+                        if (city) {
+                            setUserCity(city)
                         }
                     } catch {
                         // Silently fail — city name is optional
@@ -209,7 +211,7 @@ function CustomerExplore() {
                                                     {/* Reward Badge */}
                                                     <div className="campaign-reward-badge">
                                                         <Coins size={14} />
-                                                        <span>${campaign.rewardCad.toFixed(0)}/post</span>
+                                                        <span>{campaign.rewardGrams} oz/post</span>
                                                     </div>
 
                                                     {/* Verification Badge */}
@@ -265,7 +267,7 @@ function CustomerExplore() {
                                                             <Coins size={14} style={{ marginRight: 6, verticalAlign: '-2px' }} /> {campaign.rewardGrams} oz gold
                                                         </span>
                                                         <span className="reward-cad">
-                                                            ≈ ${campaign.rewardCad.toFixed(2)} CAD
+                                                            {campaign.rewardGrams} oz
                                                         </span>
                                                     </div>
 
@@ -285,7 +287,7 @@ function CustomerExplore() {
                                                                 <Users size={14} style={{ verticalAlign: '-2px' }} /> {campaign.remaining} spots left
                                                             </span>
                                                             <span style={{ fontSize: '0.6875rem', color: 'var(--accent)', fontWeight: 700, background: 'rgba(212, 175, 55, 0.15)', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.02em' }}>
-                                                                Only ${(campaign.remaining * campaign.rewardCad).toFixed(0)} CAD in pool!
+                                                                {(campaign.remaining * campaign.rewardGrams).toFixed(3)} oz in pool!
                                                             </span>
                                                         </div>
                                                     </div>
@@ -318,11 +320,11 @@ function CustomerExplore() {
                 </div>
             </div>
 
-            {/* RIGHT COLUMN: Mapbox Map */}
+            {/* RIGHT COLUMN: Leaflet Map */}
             <div className={`explore-map-column ${!showMapOnMobile ? 'hidden-on-mobile' : ''}`}>
                 <ErrorBoundary>
                     <DirectoryMap
-                        campaigns={campaigns as MapCampaign[] ?? []}
+                        campaigns={(campaigns ?? []) as MapCampaign[]}
                         userLat={userLat}
                         userLng={userLng}
                     />

@@ -9,7 +9,6 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@clerk/clerk-react": "^5.61.1",
         "@remotion/player": "^4.0.429",
         "@solana/spl-token": "^0.4.14",
         "@solana/wallet-adapter-base": "^0.9.27",
@@ -22,22 +21,21 @@
         "bs58": "^6.0.0",
         "convex": "^1.32.0",
         "framer-motion": "^11.15.0",
+        "leaflet": "^1.9.4",
         "lucide-react": "^0.468.0",
-        "mapbox-gl": "^3.1.2",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
-        "react-map-gl": "^7.1.7",
+        "react-leaflet": "^4.2.1",
         "react-router-dom": "^7.1.0",
         "remotion": "^4.0.429",
         "stripe": "^20.4.0",
         "zustand": "^5.0.0"
     },
     "devDependencies": {
-        "@types/mapbox-gl": "^3.4.1",
+        "@types/leaflet": "^1.9.21",
         "@types/node": "^25.5.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
-        "@types/react-map-gl": "^6.1.8",
         "@vitejs/plugin-react": "^4.3.4",
         "typescript": "^5.7.0",
         "vite": "^6.1.0",

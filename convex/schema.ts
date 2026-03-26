@@ -11,7 +11,7 @@ export default defineSchema({
     }).index("by_user", ["userId"]),
 
     users: defineTable({
-        clerkId: v.string(),
+        walletAddress: v.string(), // Solana wallet public key — primary identity
         name: v.string(),
         email: v.string(),
         role: v.union(v.literal("customer"), v.literal("business"), v.literal("pending")),
@@ -21,30 +21,23 @@ export default defineSchema({
         goldBalance: v.float64(),
         totalEarned: v.float64(),
         totalCashedOut: v.float64(),
-        walletAddress: v.optional(v.string()), // For external UI display/connection
         custodialWalletAddress: v.optional(v.string()), // Backend-managed Solana address
         encryptedPrivateKey: v.optional(v.string()), // Backend-managed key
-        // Stripe Connect (deprecated — now using Solana/PAXG)
-        stripeConnectAccountId: v.optional(v.string()),
-        stripeConnectOnboarded: v.optional(v.boolean()),
-        stripePayoutMethod: v.optional(v.union(v.literal("bank"), v.literal("debit"))),
         createdAt: v.float64(),
     })
-        .index("by_clerk_id", ["clerkId"])
+        .index("by_wallet_address", ["walletAddress"])
         .index("by_role", ["role"]),
 
     withdrawals: defineTable({
         userId: v.id("users"),
-        amount: v.float64(),           // gold ounces
-        cadAmount: v.float64(),        // CAD equivalent at time of withdrawal
-        method: v.union(v.literal("stripe"), v.literal("crypto")),
+        amount: v.float64(),           // gold ounces (PAXG)
+        method: v.literal("crypto"),
         status: v.union(
             v.literal("pending"),
             v.literal("processing"),
             v.literal("completed"),
             v.literal("failed")
         ),
-        stripeTransferId: v.optional(v.string()),
         cryptoTxSignature: v.optional(v.string()),
         cryptoDestAddress: v.optional(v.string()),
         failureReason: v.optional(v.string()),
@@ -52,8 +45,7 @@ export default defineSchema({
         createdAt: v.float64(),
     })
         .index("by_user", ["userId"])
-        .index("by_status", ["status"])
-        .index("by_method", ["method"]),
+        .index("by_status", ["status"]),
 
     businesses: defineTable({
         ownerId: v.id("users"),
@@ -68,8 +60,6 @@ export default defineSchema({
         facebookHandle: v.optional(v.string()),
         goldPool: v.float64(),
         totalGoldFunded: v.float64(),
-        preferredCurrency: v.optional(v.union(v.literal("gold"), v.literal("cad"))),
-        cadBalance: v.optional(v.float64()),
         walletAddress: v.optional(v.string()), // For external UI display/connection
         custodialWalletAddress: v.optional(v.string()), // Backend-managed Solana address
         encryptedPrivateKey: v.optional(v.string()), // Backend-managed key
@@ -100,16 +90,12 @@ export default defineSchema({
             v.literal("paused"),
             v.literal("completed")
         ),
-        currencyMode: v.optional(v.union(v.literal("gold"), v.literal("cad"))),
-        cadBudget: v.optional(v.float64()),
-        cadRewardPerPost: v.optional(v.float64()),
         goldPriceAtCreation: v.optional(v.float64()),
         escrowAddress: v.optional(v.string()),
         escrowFunded: v.optional(v.float64()),
         onChainTxSignature: v.optional(v.string()),
         // Platform fee
         platformFee: v.optional(v.float64()),
-        platformFeeCad: v.optional(v.float64()),
         // Verification method (inherits from business tier at creation)
         verificationMethod: v.optional(v.union(v.literal("manual"), v.literal("auto"))),
         createdAt: v.float64(),
@@ -165,19 +151,17 @@ export default defineSchema({
 
     goldPrice: defineTable({
         pricePerGram: v.float64(),
-        paxgCad: v.float64(),
-        usdCadRate: v.float64(),
-        currency: v.string(),
+        paxgUsd: v.float64(),
         source: v.string(),
         fetchedAt: v.float64(),
     }),
 
     // Global internal ledger for tracking KaratGold's 20% platform fees
     karatTreasury: defineTable({
-        assetType: v.union(v.literal("paxg"), v.literal("sol"), v.literal("cad"), v.literal("usd")),
+        assetType: v.union(v.literal("paxg"), v.literal("sol"), v.literal("usd")),
         balance: v.float64(),
         totalCollected: v.float64(),
-        totalSwapped: v.float64(), // Amount of CAD/USD swapped to actual Crypto in the master wallet
+        totalSwapped: v.float64(),
         lastUpdated: v.float64(),
     }).index("by_asset", ["assetType"]),
 });

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Instagram, Facebook, ShieldCheck, CheckCircle2, XCircle, Loader2, Coins, ArrowRight, Search, Link2, Zap, Eye, Clock, Upload, ImageIcon, X } from 'lucide-react'
 import { useAction, useMutation, useQuery } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import './CustomerSubmit.css'
@@ -31,15 +31,16 @@ function CustomerSubmit() {
     const [dragActive, setDragActive] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const { user: clerkUser } = useUser()
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
 
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
+    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgUsd ?? 2900
 
     const campaigns = useQuery(api.campaigns.listActive, {})
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
 
     const cooldowns = useQuery(api.submissions.getActiveCooldowns, {
         customerId: convexUser?._id,
@@ -311,7 +312,7 @@ function CustomerSubmit() {
                                                             </span>
                                                         </div>
                                                         <span style={{ fontSize: '0.6875rem', color: 'var(--accent)', fontWeight: 700, background: 'rgba(212, 175, 55, 0.15)', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.02em', marginTop: '2px' }}>
-                                                            Only ${((c.maxSubmissions - c.currentSubmissions) * c.rewardGrams * GOLD_PRICE_PER_OUNCE).toFixed(0)} CAD in pool!
+                                                            Only ${((c.maxSubmissions - c.currentSubmissions) * c.rewardGrams * GOLD_PRICE_PER_OUNCE).toFixed(0)} USD in pool!
                                                         </span>
                                                     </div>
                                                     {selectedCampaignId === c._id && (
@@ -580,7 +581,7 @@ function CustomerSubmit() {
                                         {earnedGrams.toFixed(4)} oz Gold
                                     </div>
                                     <div className="text-tertiary" style={{ fontSize: '0.8125rem' }}>
-                                        ≈ ${(earnedGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} CAD — pending approval
+                                        ≈ ${(earnedGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} USD — pending approval
                                     </div>
                                 </div>
                             </div>
@@ -622,7 +623,7 @@ function CustomerSubmit() {
                                         +{earnedGrams.toFixed(4)} oz Gold
                                     </div>
                                     <div className="text-tertiary" style={{ fontSize: '0.8125rem' }}>
-                                        ≈ ${(earnedGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} CAD
+                                        ≈ ${(earnedGrams * GOLD_PRICE_PER_OUNCE).toFixed(2)} USD
                                     </div>
                                 </div>
                             </div>

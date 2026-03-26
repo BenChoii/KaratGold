@@ -25,13 +25,13 @@ import { mutation, query } from "./_generated/server";
  */
 export const linkWallet = mutation({
     args: {
-        clerkId: v.string(),
+        currentWalletAddress: v.string(),
         walletAddress: v.string(),
     },
     handler: async (ctx, args) => {
         const user = await ctx.db
             .query("users")
-            .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+            .withIndex("by_wallet_address", (q) => q.eq("walletAddress", args.currentWalletAddress))
             .unique();
 
         if (!user) throw new Error("User not found");
@@ -181,11 +181,11 @@ export const recordRefund = mutation({
  * Get the wallet address linked to a user.
  */
 export const getWalletAddress = query({
-    args: { clerkId: v.string() },
+    args: { walletAddress: v.string() },
     handler: async (ctx, args) => {
         const user = await ctx.db
             .query("users")
-            .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+            .withIndex("by_wallet_address", (q) => q.eq("walletAddress", args.walletAddress))
             .unique();
         return user?.walletAddress ?? null;
     },

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Building2, Tag, Instagram, ArrowRight, Loader2, MapPin, Truck, X, Plus, Facebook } from 'lucide-react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import LocationAutocomplete from '../components/LocationAutocomplete'
@@ -10,10 +10,11 @@ import './BusinessOnboard.css'
 
 function BusinessOnboard() {
     const navigate = useNavigate()
-    const { user: clerkUser } = useUser()
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
     const business = useQuery(
         api.businesses.getByOwner,
         convexUser ? { ownerId: convexUser._id } : "skip"

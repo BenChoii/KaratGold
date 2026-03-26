@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
-import { PhantomWalletAdapter, SolflareWalletAdapter, BackpackWalletAdapter } from '@solana/wallet-adapter-wallets'
+import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets'
 import { clusterApiUrl } from '@solana/web3.js'
 import App from './App'
 import './index.css'
@@ -14,7 +14,6 @@ const endpoint = clusterApiUrl('devnet')
 const wallets = [
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter(),
-    new BackpackWalletAdapter(),
 ]
 
 function SolanaConvexProvider({ children }: { children: React.ReactNode }) {

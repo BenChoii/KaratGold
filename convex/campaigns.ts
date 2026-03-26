@@ -82,59 +82,40 @@ export const create = mutation({
         maxSubmissions: v.number(),
         platforms: v.array(v.string()),
         requirements: v.array(v.string()),
-        currencyMode: v.optional(v.union(v.literal("gold"), v.literal("cad"))),
-        cadBudget: v.optional(v.float64()),
-        cadRewardPerPost: v.optional(v.float64()),
         verificationMethod: v.optional(v.union(v.literal("auto"), v.literal("manual"))),
     },
     handler: async (ctx, args) => {
         const business = await ctx.db.get(args.businessId);
         if (!business) throw new Error("Business not found");
 
-        const mode = args.currencyMode ?? "gold";
-
-        // Get current gold price for conversions and validation
+        // Get current gold price for reference
         const goldPrice = await ctx.db.query("goldPrice").order("desc").first();
-        const pricePerOunce = goldPrice?.paxgCad ?? 7384;
+        const pricePerOunce = goldPrice?.paxgUsd ?? 2900;
 
-        let goldPriceAtCreation: number | undefined;
-        let rewardGrams = args.rewardGrams;
+        const rewardGrams = args.rewardGrams;
+        const goldPriceAtCreation = pricePerOunce;
 
-        if (mode === "cad") {
-            goldPriceAtCreation = pricePerOunce;
-
-            // If CAD reward per post is provided, convert to ounces (stored in rewardGrams db field)
-            if (args.cadRewardPerPost && args.cadRewardPerPost > 0) {
-                rewardGrams = Math.round((args.cadRewardPerPost / pricePerOunce) * 100000) / 100000;
-            }
-        }
-
-        // Enforce $10 CAD minimum reward per post
-        const rewardCad = rewardGrams * pricePerOunce;
-        if (rewardCad < 10) {
-            const minOunces = Math.ceil((10 / pricePerOunce) * 100000) / 100000;
+        // Enforce minimum reward: 0.001 oz per post
+        if (rewardGrams < 0.001) {
             throw new Error(
-                `Minimum reward is $10 CAD/post (≈ ${minOunces}oz at $${pricePerOunce.toFixed(2)}/oz). ` +
-                `Current reward: $${rewardCad.toFixed(2)} CAD.`
+                `Minimum reward is 0.001 oz/post. Current reward: ${rewardGrams} oz.`
             );
         }
 
-        // Calculate budget
-        const budgetCad = rewardCad * args.maxSubmissions;
+        // Calculate budget in gold ounces
         const budgetGrams = rewardGrams * args.maxSubmissions;
 
-        // Enforce $100 CAD minimum campaign budget
-        if (budgetCad < 100) {
+        // Enforce minimum campaign budget: 0.01 oz
+        if (budgetGrams < 0.01) {
             throw new Error(
-                `Minimum campaign budget is $100 CAD. ` +
-                `Current budget: $${budgetCad.toFixed(2)} CAD (${args.maxSubmissions} posts × $${rewardCad.toFixed(2)}/post). ` +
+                `Minimum campaign budget is 0.01 oz. ` +
+                `Current budget: ${budgetGrams.toFixed(5)} oz (${args.maxSubmissions} posts x ${rewardGrams} oz/post). ` +
                 `Increase reward per post or number of posts.`
             );
         }
 
         // Calculate 20% platform fee
-        const feeCad = Math.round(budgetCad * 0.20 * 100) / 100;
-        const feeGrams = Math.round((feeCad / pricePerOunce) * 100000) / 100000;
+        const feeGrams = Math.round(budgetGrams * 0.20 * 100000) / 100000;
         const totalGramsNeeded = budgetGrams + feeGrams;
 
         // Check gold pool covers budget + fee
@@ -142,10 +123,10 @@ export const create = mutation({
             const shortfall = totalGramsNeeded - business.goldPool;
             throw new Error(
                 `Insufficient gold in pool. ` +
-                `Budget: ${budgetGrams.toFixed(5)}oz ($${budgetCad.toFixed(2)}) + ` +
-                `Fee: ${feeGrams.toFixed(5)}oz ($${feeCad.toFixed(2)}) = ` +
-                `${totalGramsNeeded.toFixed(5)}oz total needed. ` +
-                `You need ${shortfall.toFixed(5)}oz more. Fund your account first.`
+                `Budget: ${budgetGrams.toFixed(5)} oz + ` +
+                `Fee: ${feeGrams.toFixed(5)} oz = ` +
+                `${totalGramsNeeded.toFixed(5)} oz total needed. ` +
+                `You need ${shortfall.toFixed(5)} oz more. Fund your pool first.`
             );
         }
 
@@ -182,7 +163,7 @@ export const create = mutation({
             type: "platform_fee",
             amount: feeGrams,
             businessId: args.businessId,
-            note: `Platform fee: ${feeGrams.toFixed(5)}oz ($${feeCad.toFixed(2)} CAD) — 20% of $${budgetCad.toFixed(2)} campaign budget`,
+            note: `Platform fee: ${feeGrams.toFixed(5)} oz — 20% of ${budgetGrams.toFixed(5)} oz campaign budget`,
             createdAt: Date.now(),
         });
 
@@ -204,12 +185,8 @@ export const create = mutation({
             requirements: args.requirements,
             currentSubmissions: 0,
             status: "active",
-            currencyMode: mode,
-            cadBudget: args.cadBudget,
-            cadRewardPerPost: args.cadRewardPerPost,
             goldPriceAtCreation,
             platformFee: feeGrams,
-            platformFeeCad: feeCad,
             verificationMethod: args.verificationMethod ?? (business.verificationTier === "auto" ? "auto" : "manual"),
             createdAt: Date.now(),
         });

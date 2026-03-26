@@ -25,7 +25,7 @@ function TreasuryTrackerInner() {
     const treasury = useQuery(api.campaigns.getKaratTreasury)
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
 
-    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
+    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgUsd ?? 2900
 
     if (treasury === undefined || treasury === null) return null
 

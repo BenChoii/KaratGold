@@ -21,7 +21,7 @@ export const getDashboardStats = query({
         const withdrawals = await ctx.db.query("withdrawals").collect();
         const treasury = await ctx.db
             .query("karatTreasury")
-            .withIndex("by_asset", (q) => q.eq("assetType", "cad"))
+            .withIndex("by_asset", (q) => q.eq("assetType", "paxg"))
             .first();
         const goldPrice = await ctx.db.query("goldPrice").order("desc").first();
 
@@ -38,22 +38,22 @@ export const getDashboardStats = query({
 
         const completedWithdrawals = withdrawals.filter((w) => w.status === "completed");
         const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending" || w.status === "processing");
-        const totalPaidOut = completedWithdrawals.reduce((sum, w) => sum + w.cadAmount, 0);
+        const totalPaidOutOz = completedWithdrawals.reduce((sum, w) => sum + w.amount, 0);
 
-        const stripeConnectedUsers = customers.filter((u) => u.stripeConnectOnboarded).length;
+        const walletConnectedUsers = customers.filter((u) => !!u.walletAddress || !!u.custodialWalletAddress).length;
 
         return {
             // Users
             totalUsers: users.length,
             totalCustomers: customers.length,
             totalBusinessOwners: users.filter((u) => u.role === "business").length,
-            stripeConnectedUsers,
+            walletConnectedUsers,
 
             // Gold
             totalGoldInCirculation,
             totalEarnedEver,
             totalCashedOutEver,
-            goldPricePerOunce: goldPrice?.paxgCad ?? 2900,
+            goldPricePerOunce: goldPrice?.paxgUsd ?? 2900,
 
             // Businesses
             totalBusinesses: businesses.length,
@@ -69,7 +69,7 @@ export const getDashboardStats = query({
             totalWithdrawals: withdrawals.length,
             pendingWithdrawals: pendingWithdrawals.length,
             completedWithdrawals: completedWithdrawals.length,
-            totalPaidOut,
+            totalPaidOutOz,
 
             // Treasury
             treasuryBalance: treasury?.balance ?? 0,
@@ -91,7 +91,7 @@ export const getAllUsers = query({
             goldBalance: u.goldBalance,
             totalEarned: u.totalEarned,
             totalCashedOut: u.totalCashedOut,
-            stripeConnected: u.stripeConnectOnboarded ?? false,
+            walletConnected: !!(u.walletAddress || u.custodialWalletAddress),
             createdAt: u.createdAt,
         }));
     },
@@ -120,7 +120,6 @@ export const getAllBusinesses = query({
                     ownerEmail: owner?.email ?? "",
                     goldPool: b.goldPool,
                     totalGoldFunded: b.totalGoldFunded,
-                    cadBalance: b.cadBalance ?? 0,
                     campaignCount: campaigns.length,
                     activeCampaigns: campaigns.filter((c) => c.status === "active").length,
                     createdAt: b.createdAt,
@@ -149,7 +148,6 @@ export const getAllCampaigns = query({
                     currentSubmissions: c.currentSubmissions,
                     verificationMethod: c.verificationMethod ?? "manual",
                     platformFee: c.platformFee ?? 0,
-                    platformFeeCad: c.platformFeeCad ?? 0,
                     createdAt: c.createdAt,
                 };
             })
@@ -171,10 +169,8 @@ export const getAllWithdrawals = query({
                     userName: user?.name ?? "Unknown",
                     userEmail: user?.email ?? "",
                     amount: w.amount,
-                    cadAmount: w.cadAmount,
                     method: w.method,
                     status: w.status,
-                    stripeTransferId: w.stripeTransferId,
                     cryptoTxSignature: w.cryptoTxSignature,
                     cryptoDestAddress: w.cryptoDestAddress,
                     failureReason: w.failureReason,

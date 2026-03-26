@@ -114,7 +114,6 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
 
     const formatDate = (ts: number) => new Date(ts).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: '2-digit' })
     const formatGold = (oz: number) => oz.toFixed(4) + ' oz'
-    const formatCAD = (cad: number) => '$' + cad.toFixed(2)
 
     return (
         <div className="admin-page">
@@ -142,7 +141,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                     <div className="admin-stat-card">
                         <div className="admin-stat-label">Gold in Circulation</div>
                         <div className="admin-stat-value gold">{formatGold(stats.totalGoldInCirculation)}</div>
-                        <div className="admin-stat-sub">{formatCAD(stats.totalGoldInCirculation * stats.goldPricePerOunce)} CAD value</div>
+                        <div className="admin-stat-sub">{formatGold(stats.totalGoldInCirculation)} in circulation</div>
                     </div>
                     <div className="admin-stat-card">
                         <div className="admin-stat-label">Active Campaigns</div>
@@ -150,18 +149,18 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                         <div className="admin-stat-sub">{stats.totalCampaigns} total · {stats.totalSubmissions} submissions</div>
                     </div>
                     <div className="admin-stat-card">
-                        <div className="admin-stat-label">Treasury (CAD)</div>
-                        <div className="admin-stat-value green">{formatCAD(stats.treasuryBalance * stats.goldPricePerOunce)}</div>
+                        <div className="admin-stat-label">Treasury (PAXG)</div>
+                        <div className="admin-stat-value green">{formatGold(stats.treasuryBalance)}</div>
                         <div className="admin-stat-sub">{formatGold(stats.treasuryTotalCollected)} total collected</div>
                     </div>
                     <div className="admin-stat-card">
                         <div className="admin-stat-label">Total Paid Out</div>
-                        <div className="admin-stat-value">{formatCAD(stats.totalPaidOut)}</div>
+                        <div className="admin-stat-value">{formatGold(stats.totalPaidOutOz)}</div>
                         <div className="admin-stat-sub">{stats.completedWithdrawals} completed · {stats.pendingWithdrawals} pending</div>
                     </div>
                     <div className="admin-stat-card">
                         <div className="admin-stat-label">Wallet Connected</div>
-                        <div className="admin-stat-value">{stats.stripeConnectedUsers}</div>
+                        <div className="admin-stat-value">{stats.walletConnectedUsers}</div>
                         <div className="admin-stat-sub">of {stats.totalCustomers} customers</div>
                     </div>
                 </motion.div>
@@ -202,8 +201,8 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                     <p style={{ fontWeight: 600 }}>{formatGold(stats.totalGoldPools)}</p>
                                 </div>
                                 <div>
-                                    <p className="admin-stat-label">Gold Spot Price</p>
-                                    <p style={{ fontWeight: 600, color: 'var(--gold)' }}>{formatCAD(stats.goldPricePerOunce)} / oz</p>
+                                    <p className="admin-stat-label">PAXG Price (USD)</p>
+                                    <p style={{ fontWeight: 600, color: 'var(--gold)' }}>${stats.goldPricePerOunce.toFixed(2)} / oz</p>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +223,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                         <th>Gold Balance</th>
                                         <th>Total Earned</th>
                                         <th>Cashed Out</th>
-                                        <th>Wallet</th>
+                                        <th>Wallet Connected</th>
                                         <th>Joined</th>
                                     </tr>
                                 </thead>
@@ -237,7 +236,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                             <td style={{ color: 'var(--gold)' }}>{formatGold(u.goldBalance)}</td>
                                             <td>{formatGold(u.totalEarned)}</td>
                                             <td>{formatGold(u.totalCashedOut)}</td>
-                                            <td>{u.stripeConnected ? '✅' : '—'}</td>{/* TODO: rename field to walletConnected */}
+                                            <td>{u.walletConnected ? 'Yes' : '--'}</td>
                                             <td>{formatDate(u.createdAt)}</td>
                                         </tr>
                                     ))}
@@ -330,8 +329,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                 <thead>
                                     <tr>
                                         <th>User</th>
-                                        <th>Amount</th>
-                                        <th>CAD</th>
+                                        <th>Amount (oz)</th>
                                         <th>Method</th>
                                         <th>Status</th>
                                         <th>Transfer ID</th>
@@ -343,11 +341,10 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                         <tr key={w._id}>
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{w.userName}</td>
                                             <td>{formatGold(w.amount)}</td>
-                                            <td>{formatCAD(w.cadAmount)}</td>
-                                            <td><span className={`status-badge ${w.method === 'crypto' ? 'processing' : 'active'}`}>{w.method === 'crypto' ? 'PAXG' : w.method}</span></td>
+                                            <td><span className="status-badge processing">PAXG</span></td>
                                             <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
                                             <td style={{ fontSize: '0.75rem', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {w.cryptoTxSignature || w.stripeTransferId || '—'}
+                                                {w.cryptoTxSignature || '--'}
                                             </td>
                                             <td>{formatDate(w.createdAt)}</td>
                                         </tr>

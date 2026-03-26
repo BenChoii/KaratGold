@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Briefcase, BarChart3, Users, ArrowRight } from 'lucide-react'
-import { SignUpButton } from '@clerk/clerk-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWallet } from '@solana/wallet-adapter-react'
 import './RoleSelect.css'
 import '../pages/Landing.css'
 
 function BusinessTeaser() {
+    const { connected } = useWallet()
+
     return (
         <div className="role-teaser-page business-theme">
             <div className="hero-bg-grid" />
@@ -45,12 +48,14 @@ function BusinessTeaser() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.6 }}
                     >
-                        <SignUpButton mode="modal" signInForceRedirectUrl="/role?selected=business" forceRedirectUrl="/role?selected=business">
-                            <button className="btn btn-primary btn-xl teaser-btn">
+                        {connected ? (
+                            <Link to="/role?selected=business" className="btn btn-primary btn-xl teaser-btn">
                                 Create Business Profile <ArrowRight size={18} />
-                            </button>
-                        </SignUpButton>
-                        <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Clerk Auth</p>
+                            </Link>
+                        ) : (
+                            <WalletMultiButton />
+                        )}
+                        <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Solana Wallet</p>
                         <Link to="/how-it-works/business" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.75rem', textDecoration: 'none', fontWeight: 500 }}>
                             Learn how campaigns work →
                         </Link>
@@ -80,7 +85,7 @@ function BusinessTeaser() {
                         </div>
                         <div className="glass-progress mt-4">
                             <div className="progress-bar"><div className="progress-fill" style={{ width: '60%' }}></div></div>
-                            <span className="text-caption mt-2 block opacity-70">Budget remaining: $200 / $500 CAD</span>
+                            <span className="text-caption mt-2 block opacity-70">Pool remaining: 0.068 / 0.170 oz gold</span>
                         </div>
                     </div>
                 </motion.div>

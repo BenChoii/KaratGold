@@ -37,8 +37,7 @@ export default defineConfig({
                     }
                     // Map libraries
                     if (
-                        id.includes('node_modules/mapbox-gl/') ||
-                        id.includes('node_modules/react-map-gl/')
+                        id.includes('node_modules/leaflet/')
                     ) {
                         return 'map-vendor';
                     }
@@ -50,9 +49,9 @@ export default defineConfig({
                     if (id.includes('node_modules/@stripe/')) {
                         return 'stripe-vendor';
                     }
-                    // Clerk auth
-                    if (id.includes('node_modules/@clerk/')) {
-                        return 'clerk-vendor';
+                    // Solana wallet adapter
+                    if (id.includes('node_modules/@solana/wallet-adapter')) {
+                        return 'wallet-adapter-vendor';
                     }
                     // Convex backend
                     if (id.includes('node_modules/convex/')) {

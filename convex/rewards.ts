@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-const DEFAULT_GOLD_PRICE = 93.47; // fallback CAD/g
+const DEFAULT_GOLD_PRICE = 93.47; // fallback USD/g
 
 // Helper: get latest gold price from cache
 async function getGoldPriceFromDb(ctx: any): Promise<number> {
@@ -32,9 +32,6 @@ export const getBalance = query({
             goldBalance: user.goldBalance,
             totalEarned: user.totalEarned,
             totalCashedOut: user.totalCashedOut,
-            balanceCAD: +(user.goldBalance * goldPricePerGram).toFixed(2),
-            totalEarnedCAD: +(user.totalEarned * goldPricePerGram).toFixed(2),
-            totalCashedOutCAD: +(user.totalCashedOut * goldPricePerGram).toFixed(2),
             goldPricePerGram,
             postsVerified: verified,
             totalPosts: total,
@@ -92,8 +89,6 @@ export const cashOut = mutation({
             throw new Error("Insufficient gold balance");
         }
 
-        const goldPricePerGram = await getGoldPriceFromDb(ctx);
-
         await ctx.db.patch(args.userId, {
             goldBalance: user.goldBalance - args.amount,
             totalCashedOut: user.totalCashedOut + args.amount,
@@ -104,8 +99,8 @@ export const cashOut = mutation({
             type: "cashout",
             amount: args.amount,
             note: args.txSignature
-                ? `Cashed out ${args.amount}g on-chain (${(args.amount * goldPricePerGram).toFixed(2)} CAD)`
-                : `Cashed out ${args.amount.toFixed(4)} oz (${(args.amount * goldPricePerGram).toFixed(2)} CAD)${args.walletAddress ? ` to ${args.walletAddress}` : ''}`,
+                ? `Cashed out ${args.amount} oz PAXG on-chain`
+                : `Cashed out ${args.amount.toFixed(4)} oz PAXG${args.walletAddress ? ` to ${args.walletAddress}` : ''}`,
             txSignature: args.txSignature,
             createdAt: Date.now(),
         });
@@ -126,7 +121,7 @@ export const cashOut = mutation({
 
         return {
             newBalance: user.goldBalance - args.amount,
-            cashedOutCAD: +(args.amount * goldPricePerGram).toFixed(2),
+            cashedOutOz: args.amount,
         };
     },
 });

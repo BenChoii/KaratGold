@@ -64,8 +64,8 @@ const comparisonRows = [
 /* ===== PAGE COMPONENT ===== */
 function GoldExplainer() {
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    // paxgCad stores the full CAD value of 1 PAXG token (1 troy ounce)
-    const pricePerOunce = goldPriceData?.paxgCad ?? (93.47 * 31.1035)
+    // paxgUsd stores the full USD value of 1 PAXG token (1 troy ounce)
+    const pricePerOunce = goldPriceData?.paxgUsd ?? (93.47 * 31.1035)
 
     return (
         <div className="gold-explainer">
@@ -112,7 +112,7 @@ function GoldExplainer() {
                         {[
                             { value: '1:1', label: '1 Token = 1 Troy Ounce' },
                             { value: 'LBMA', label: 'Certified Gold' },
-                            { value: '~$' + pricePerOunce.toFixed(0), label: 'CAD / Ounce' },
+                            { value: '~$' + pricePerOunce.toFixed(0), label: 'USD / Ounce' },
                         ].map((stat, i) => (
                             <motion.div
                                 key={i}
@@ -328,7 +328,7 @@ function GoldExplainer() {
                             {
                                 icon: <Wallet size={26} />,
                                 title: 'Cash Out Anytime',
-                                desc: 'Convert your gold to Canadian dollars whenever you want. No minimums, no waiting periods.',
+                                desc: 'Convert your gold to US dollars whenever you want. No minimums, no waiting periods.',
                             },
                             {
                                 icon: <Truck size={26} />,

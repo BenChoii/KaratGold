@@ -145,9 +145,6 @@ function VerifyCard() {
 /* ===== GOLD WALLET CARD ===== */
 function GoldPileCard() {
     const [showDetails, setShowDetails] = useState(false)
-    const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const paxgCad = goldPriceData?.paxgCad ?? (93.47 * 31.1035)
-    const totalCad = (0.047 * paxgCad).toFixed(2)
 
     useEffect(() => {
         const t = setTimeout(() => setShowDetails(true), 800)
@@ -173,7 +170,7 @@ function GoldPileCard() {
                         <span className="wallet-amount-value">0.047</span>
                         <span className="wallet-amount-unit">oz</span>
                     </div>
-                    <span className="wallet-balance-fiat">≈ ${totalCad} CAD</span>
+                    <span className="wallet-balance-fiat">= 0.047 PAXG</span>
                 </div>
 
                 {/* Sparkline */}
@@ -249,14 +246,18 @@ function MapCard() {
                     </div>
                 </div>
 
-                {/* Map area with real map background */}
+                {/* Map area with dark background */}
                 <div className="mock-map-area">
-                    <img
+                    <div
                         className="mock-map-bg"
-                        src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/0,20,1.5,0/600x800@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
-                        alt=""
-                        loading="lazy"
-                        draggable={false}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%)',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                        }}
                     />
                     {/* Floating pins */}
                     <motion.div
@@ -304,7 +305,7 @@ function MapCard() {
                         </div>
                         <div className="mock-listing-reward">
                             <span className="mock-reward-amount">0.011 oz</span>
-                            <span className="mock-reward-cad">~$76</span>
+                            <span className="mock-reward-cad">PAXG</span>
                         </div>
                     </div>
                     <div className="mock-listing-card">
@@ -315,7 +316,7 @@ function MapCard() {
                         </div>
                         <div className="mock-listing-reward">
                             <span className="mock-reward-amount">0.016 oz</span>
-                            <span className="mock-reward-cad">~$111</span>
+                            <span className="mock-reward-cad">PAXG</span>
                         </div>
                     </div>
                 </div>
@@ -360,7 +361,7 @@ function AnimatedCounter({ value, prefix = '', suffix = '' }: { value: number; p
 /* ===== INTERACTIVE ROI CALCULATOR ===== */
 function ROICalculator() {
     const [budget, setBudget] = useState(500);
-    const payoutPerPost = 10; // $10 CAD minimum per post
+    const payoutPerPost = 10; // $10 USD equivalent per post
 
     const guaranteedPosts = Math.floor(budget / payoutPerPost);
     const estimatedImpressions = guaranteedPosts * 450; // Conservative 450 views per creator
@@ -461,7 +462,7 @@ function ROICalculator() {
                         </div>
                     </div>
                     <div className="roi-disclaimer">
-                        *Estimates based on a minimum reward of $10 CAD per post, and a conservative baseline of 450 views per creator.
+                        *Estimates based on a minimum reward of ~0.003 oz gold per post, and a conservative baseline of 450 views per creator.
                     </div>
                 </div>
             </div>
@@ -472,7 +473,7 @@ function ROICalculator() {
 /* ===== LANDING PAGE ===== */
 function Landing() {
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const paxgCad = goldPriceData?.paxgCad ?? (93.47 * 31.1035)
+    const paxgUsd = goldPriceData?.paxgUsd ?? (93.47 * 31.1035)
 
     // Scroll tracker for HIW section and Bento mouse tracker
     const [activeHiwStep, setActiveHiwStep] = useState(0);
@@ -850,7 +851,7 @@ function Landing() {
                                 <GoldSparkline />
                                 <div className="live-pill">
                                     <span className="pulse-dot"></span>
-                                    <span>Live 1 oz = ${paxgCad.toFixed(2)}</span>
+                                    <span>Live 1 oz = ${paxgUsd.toFixed(2)}</span>
                                 </div>
                             </div>
                             <div className="bento-content mt-auto">

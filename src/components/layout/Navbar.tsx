@@ -2,16 +2,16 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-    SignedIn,
-    SignedOut,
-    SignInButton,
-    UserButton,
-    useUser,
-} from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import './Navbar.css'
+
+function truncateAddress(address: string): string {
+    if (address.length <= 10) return address
+    return `${address.slice(0, 4)}...${address.slice(-4)}`
+}
 
 function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -20,12 +20,13 @@ function Navbar() {
     const lastScrollY = useRef(0)
     const location = useLocation()
     const isLanding = location.pathname === '/'
-    const { user: clerkUser, isSignedIn } = useUser()
+    const { publicKey, connected } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
     const syncUser = useMutation(api.users.getOrCreate)
 
     const convexUser = useQuery(
-        api.users.getByClerkId,
-        clerkUser ? { clerkId: clerkUser.id } : "skip"
+        api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
     )
 
     const navLinks = [
@@ -56,17 +57,16 @@ function Navbar() {
         setMobileOpen(false)
     }, [location.pathname])
 
-    // Sync Clerk user → Convex on sign in
+    // Sync wallet user to Convex on connect
     useEffect(() => {
-        if (isSignedIn && clerkUser) {
+        if (connected && walletAddress) {
             syncUser({
-                clerkId: clerkUser.id,
-                name: clerkUser.fullName ?? clerkUser.firstName ?? 'User',
-                email: clerkUser.primaryEmailAddress?.emailAddress ?? '',
-                avatarUrl: clerkUser.imageUrl,
+                walletAddress,
+                name: truncateAddress(walletAddress),
+                email: '',
             })
         }
-    }, [isSignedIn, clerkUser?.id])
+    }, [connected, walletAddress])
 
     const linkVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -98,16 +98,17 @@ function Navbar() {
                         <a href="#for-business" className="nav-link">For Business</a>
                         <a href="#about" className="nav-link">About</a>
                         <div className="navbar-actions">
-                            <SignedOut>
-                                <SignInButton mode="modal" forceRedirectUrl="/role" signUpForceRedirectUrl="/role">
-                                    <button className="btn btn-ghost">Sign In</button>
-                                </SignInButton>
-                                <Link to="/join" className="btn btn-primary btn-sm">Get Started</Link>
-                            </SignedOut>
-                            <SignedIn>
-                                <Link to="/explore" className="btn btn-ghost">Explore</Link>
-                                <UserButton afterSignOutUrl="/" />
-                            </SignedIn>
+                            {!connected ? (
+                                <>
+                                    <WalletMultiButton />
+                                    <Link to="/join" className="btn btn-primary btn-sm">Get Started</Link>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/explore" className="btn btn-ghost">Explore</Link>
+                                    <WalletMultiButton />
+                                </>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -122,14 +123,7 @@ function Navbar() {
                             </Link>
                         ))}
                         <div className="navbar-actions">
-                            <SignedIn>
-                                <UserButton afterSignOutUrl="/" />
-                            </SignedIn>
-                            <SignedOut>
-                                <SignInButton mode="modal" forceRedirectUrl="/role" signUpForceRedirectUrl="/role">
-                                    <button className="btn btn-primary btn-sm">Sign In</button>
-                                </SignInButton>
-                            </SignedOut>
+                            <WalletMultiButton />
                         </div>
                     </div>
                 )}
@@ -170,16 +164,17 @@ function Navbar() {
                                             animate="visible"
                                             exit="exit"
                                         >
-                                            <SignedOut>
-                                                <SignInButton mode="modal" forceRedirectUrl="/role" signUpForceRedirectUrl="/role">
-                                                    <button className="btn btn-secondary btn-lg" onClick={() => setMobileOpen(false)}>Sign In</button>
-                                                </SignInButton>
-                                                <Link to="/join" className="btn btn-primary btn-lg" onClick={() => setMobileOpen(false)}>Get Started</Link>
-                                            </SignedOut>
-                                            <SignedIn>
-                                                <Link to="/explore" className="btn btn-primary btn-lg" onClick={() => setMobileOpen(false)}>Explore</Link>
-                                                <UserButton afterSignOutUrl="/" />
-                                            </SignedIn>
+                                            {!connected ? (
+                                                <>
+                                                    <WalletMultiButton />
+                                                    <Link to="/join" className="btn btn-primary btn-lg" onClick={() => setMobileOpen(false)}>Get Started</Link>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Link to="/explore" className="btn btn-primary btn-lg" onClick={() => setMobileOpen(false)}>Explore</Link>
+                                                    <WalletMultiButton />
+                                                </>
+                                            )}
                                         </motion.div>
                                     </>
                                 ) : (
@@ -210,14 +205,7 @@ function Navbar() {
                                             animate="visible"
                                             exit="exit"
                                         >
-                                            <SignedIn>
-                                                <UserButton afterSignOutUrl="/" />
-                                            </SignedIn>
-                                            <SignedOut>
-                                                <SignInButton mode="modal" forceRedirectUrl="/role" signUpForceRedirectUrl="/role">
-                                                    <button className="btn btn-primary btn-lg" onClick={() => setMobileOpen(false)}>Sign In</button>
-                                                </SignInButton>
-                                            </SignedOut>
+                                            <WalletMultiButton />
                                         </motion.div>
                                     </>
                                 )}

@@ -127,13 +127,13 @@ function HowItWorksCustomer() {
                     <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
                         <span className="section-num">3</span> Understanding Your Balance
                     </motion.h2>
-                    <p>Your balance is displayed in <strong>gold ounces</strong> with a live CAD equivalent. Here's how it works:</p>
+                    <p>Your balance is displayed in <strong>gold ounces (PAXG)</strong>. Here's how it works:</p>
                     <ul style={{ color: 'var(--text-secondary)', lineHeight: 2, paddingLeft: 'var(--space-5)' }}>
                         <li><strong>Gold ounces:</strong> The actual amount of gold you own. This number only changes when you earn or cash out.</li>
-                        <li><strong>CAD value:</strong> Calculated in real-time using the current gold spot price. This fluctuates daily.</li>
-                        <li><strong>If gold goes up:</strong> Your CAD value increases even without earning more. You benefit from gold appreciation!</li>
+                        <li><strong>PAXG value:</strong> 1 oz on KaratGold = 1 PAXG token, backed by 1 troy ounce of real gold.</li>
+                        <li><strong>If gold goes up:</strong> The market value of your PAXG increases. You benefit from gold appreciation!</li>
                         <li><strong>Total Earned:</strong> Lifetime gold earned across all campaigns.</li>
-                        <li><strong>Total Cashed Out:</strong> Total gold you've withdrawn via CAD or crypto.</li>
+                        <li><strong>Total Cashed Out:</strong> Total gold you've withdrawn as PAXG to your Solana wallet.</li>
                     </ul>
                 </div>
             </section>
@@ -175,11 +175,11 @@ function HowItWorksCustomer() {
                     </motion.h2>
                     <FAQ items={[
                         { q: 'Is the gold real?', a: 'Yes. Your gold balance is backed by PAXG (Paxos Gold), which represents physical gold bullion stored in Brink\'s high-security vaults in London. Each token is fully redeemable.' },
-                        { q: 'How much can I earn per post?', a: 'It depends on the campaign. Businesses set their own reward amounts, typically ranging from 0.001 to 0.01 oz per post (roughly $3 - $30 CAD).' },
-                        { q: 'Is there a minimum to cash out?', a: 'Yes — the minimum cashout is $10 CAD equivalent. This keeps transaction fees reasonable for everyone.' },
+                        { q: 'How much can I earn per post?', a: 'It depends on the campaign. Businesses set their own reward amounts, typically ranging from 0.001 to 0.01 oz per post.' },
+                        { q: 'Is there a minimum to cash out?', a: 'Yes — the minimum cashout is 0.001 oz. This keeps transaction fees reasonable for everyone.' },
                         { q: 'Do I need Instagram to participate?', a: 'Instagram and Facebook are currently supported. We\'re adding more platforms soon. You need at least one active social account.' },
                         { q: 'What happens if my post is rejected?', a: 'You\'ll see the rejection status on your Rewards page with the reason. You can resubmit a corrected post to the same campaign if it\'s still active.' },
-                        { q: 'Can I cash out to both CAD and crypto?', a: 'Absolutely! You can split your balance however you want. Cash some out via bank deposit and convert the rest to PAXG tokens.' },
+                        { q: 'How do I cash out?', a: 'Withdraw your gold as PAXG tokens directly to your Solana wallet. From there you can hold, swap for USDC/SOL on a DEX, or transfer to an exchange.' },
                     ]} />
                 </div>
             </section>

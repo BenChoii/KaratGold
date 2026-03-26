@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Coins, Camera, ShieldCheck, ArrowRight } from 'lucide-react'
-import { SignUpButton } from '@clerk/clerk-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWallet } from '@solana/wallet-adapter-react'
 import './RoleSelect.css'
 import '../pages/Landing.css'
 
 function CustomerTeaser() {
+    const { connected } = useWallet()
+
     return (
         <div className="role-teaser-page customer-theme">
             <div className="hero-bg-grid" />
@@ -50,12 +53,14 @@ function CustomerTeaser() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.6 }}
                     >
-                        <SignUpButton mode="modal" signInForceRedirectUrl="/role?selected=customer" forceRedirectUrl="/role?selected=customer">
-                            <button className="btn btn-primary btn-xl teaser-btn">
+                        {connected ? (
+                            <Link to="/role?selected=customer" className="btn btn-primary btn-xl teaser-btn">
                                 Create Patron Profile <ArrowRight size={18} />
-                            </button>
-                        </SignUpButton>
-                        <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Clerk Auth</p>
+                            </Link>
+                        ) : (
+                            <WalletMultiButton />
+                        )}
+                        <p className="text-caption mt-3" style={{ opacity: 0.6 }}>Secured by Solana Wallet</p>
                         <Link to="/how-it-works/customer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.75rem', textDecoration: 'none', fontWeight: 500 }}>
                             Learn how Karat Gold works →
                         </Link>
@@ -76,7 +81,7 @@ function CustomerTeaser() {
                             <span>Vault Balance</span>
                         </div>
                         <div className="glass-balance">0.245 oz</div>
-                        <div className="glass-fiat">≈ $840.45 CAD</div>
+                        <div className="glass-fiat">= 0.245 PAXG</div>
                         <div className="glass-chart-placeholder">
                             {/* Mini sparkline visualization */}
                             <svg viewBox="0 0 200 60" width="100%" height="60" className="opacity-50">

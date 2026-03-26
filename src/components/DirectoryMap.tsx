@@ -1,22 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Coins, MapPin, ArrowRight, X } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Coins, ArrowRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-
-// You'll need to add a mapbox token to your .env.local: VITE_MAPBOX_TOKEN
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
-
-// Use a dark, premium mapbox style
-const MAP_STYLE = 'mapbox://styles/mapbox/dark-v11';
+// CartoDB dark tiles — completely free, no API key required
+const TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>';
 
 export interface MapCampaign {
     _id: string;
     businessName: string;
     businessCategory: string;
     rewardGrams: number;
-    rewardCad: number;
     latitude: number | null;
     longitude: number | null;
 }
@@ -27,45 +23,74 @@ interface DirectoryMapProps {
     userLng?: number | null;
 }
 
+// Custom gold coin icon for campaign markers
+function createCampaignIcon(): L.DivIcon {
+    return L.divIcon({
+        className: 'campaign-marker-wrapper',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        html: `<div class="campaign-marker" style="
+            width: 32px;
+            height: 32px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), 0 4px 8px rgba(0,0,0,0.5);
+            color: var(--gold);
+            transition: transform 0.2s, box-shadow 0.2s;
+        ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+        </div>`,
+    });
+}
+
+// Custom user location icon
+function createUserIcon(): L.DivIcon {
+    return L.divIcon({
+        className: 'user-marker-wrapper',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        html: `<div style="
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 15px var(--accent);
+        "></div>`,
+    });
+}
+
 export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps) {
     const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<mapboxgl.Map | null>(null);
-    const markersRef = useRef<{ [key: string]: mapboxgl.Marker }>({});
+    const map = useRef<L.Map | null>(null);
+    const markersRef = useRef<{ [key: string]: L.Marker }>({});
     const [popupInfo, setPopupInfo] = useState<MapCampaign | null>(null);
 
     // Initial map setup
     useEffect(() => {
-        if (!mapContainer.current || !MAPBOX_TOKEN) return;
+        if (!mapContainer.current) return;
         if (map.current) return; // Initialize map only once
 
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-
-        map.current = new mapboxgl.Map({
-            container: mapContainer.current,
-            style: MAP_STYLE,
-            center: [userLng ?? 0, userLat ?? 20],
+        map.current = L.map(mapContainer.current, {
+            center: [userLat ?? 20, userLng ?? 0],
             zoom: userLng ? 11 : 2,
-            pitch: 45,
-            bearing: 0
+            zoomControl: false,
         });
 
-        // Add navigation controls (zoom, rotation)
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        // Add zoom control to top-right (matching previous Mapbox layout)
+        L.control.zoom({ position: 'topright' }).addTo(map.current);
 
-        // Add 3D terrain on load
-        map.current.on('style.load', () => {
-            if (!map.current) return;
-
-            // Setup DEM source
-            map.current.addSource('mapbox-dem', {
-                'type': 'raster-dem',
-                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                'tileSize': 512,
-                'maxzoom': 14
-            });
-            // Add the DEM source as a terrain layer with exaggerated height
-            map.current.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-        });
+        // Add dark tile layer
+        L.tileLayer(TILE_URL, {
+            attribution: TILE_ATTRIBUTION,
+            maxZoom: 19,
+            subdomains: 'abcd',
+        }).addTo(map.current);
 
         // Cleanup on unmount
         return () => {
@@ -73,8 +98,6 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
                 map.current.remove();
                 map.current = null;
             }
-            // Cleanup markers
-            Object.values(markersRef.current).forEach(marker => marker.remove());
             markersRef.current = {};
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -101,66 +124,50 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
         });
 
         // 2. Add or update markers
+        const campaignIcon = createCampaignIcon();
+
         validCampaigns.forEach(campaign => {
+            const lat = Number(campaign.latitude);
+            const lng = Number(campaign.longitude);
+
             if (!markersRef.current[campaign._id]) {
-                // Create custom DOM element for the marker
-                const el = document.createElement('div');
-                el.className = 'campaign-marker';
+                const marker = L.marker([lat, lng], { icon: campaignIcon })
+                    .addTo(map.current!);
 
-                // Use standard DOM to avoid React 19 createRoot crashes inside map loop
-                el.style.width = '32px';
-                el.style.height = '32px';
-                el.style.background = 'rgba(20, 20, 20, 0.9)';
-                el.style.border = '2px solid var(--gold)';
-                el.style.borderRadius = '50%';
-                el.style.display = 'flex';
-                el.style.alignItems = 'center';
-                el.style.justifyContent = 'center';
-                el.style.cursor = 'pointer';
-                el.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.4), 0 4px 8px rgba(0,0,0,0.5)';
-                el.style.color = 'var(--gold)';
-                el.style.transition = 'transform 0.2s, box-shadow 0.2s';
-
-                // Add the SVG directly via innerHTML
-                el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coins"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>`;
-
-                el.addEventListener('mouseenter', (e) => {
-                    const target = e.currentTarget as HTMLElement;
-                    target.style.transform = 'scale(1.1) translateY(-4px)';
-                    target.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.6), 0 8px 16px rgba(0,0,0,0.6)';
-                });
-
-                el.addEventListener('mouseleave', (e) => {
-                    const target = e.currentTarget as HTMLElement;
-                    target.style.transform = 'none';
-                    target.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.4), 0 4px 8px rgba(0,0,0,0.5)';
-                });
-
-                // Add click listener to the element itself
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                marker.on('click', () => {
                     setPopupInfo(campaign);
 
-                    // Optional: fly to the clicked marker
+                    // Fly to the clicked marker
                     if (map.current) {
-                        map.current.flyTo({
-                            center: [campaign.longitude!, campaign.latitude!],
-                            zoom: 14,
-                            pitch: 60,
-                            essential: true
+                        map.current.flyTo([lat, lng], 14, {
+                            duration: 1.2,
                         });
                     }
                 });
 
-                // Create and add the marker to the map
-                const marker = new mapboxgl.Marker({ element: el })
-                    .setLngLat([Number(campaign.longitude), Number(campaign.latitude)])
-                    .addTo(map.current!);
+                // Hover effects via DOM
+                const el = marker.getElement();
+                if (el) {
+                    el.addEventListener('mouseenter', () => {
+                        const inner = el.querySelector('.campaign-marker') as HTMLElement;
+                        if (inner) {
+                            inner.style.transform = 'scale(1.1) translateY(-4px)';
+                            inner.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.6), 0 8px 16px rgba(0,0,0,0.6)';
+                        }
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        const inner = el.querySelector('.campaign-marker') as HTMLElement;
+                        if (inner) {
+                            inner.style.transform = 'none';
+                            inner.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.4), 0 4px 8px rgba(0,0,0,0.5)';
+                        }
+                    });
+                }
 
                 markersRef.current[campaign._id] = marker;
             } else {
-                // Update position if it exists (though rare for this app)
-                markersRef.current[campaign._id].setLngLat([Number(campaign.longitude), Number(campaign.latitude)]);
+                // Update position if it exists
+                markersRef.current[campaign._id].setLatLng([lat, lng]);
             }
         });
 
@@ -175,43 +182,22 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
             isNaN(userLng)
         ) return;
 
+        const userIcon = createUserIcon();
+
         if (!markersRef.current['user-location']) {
-            const el = document.createElement('div');
-            el.className = 'user-marker';
-
-            el.style.width = '16px';
-            el.style.height = '16px';
-            el.style.background = 'var(--accent)';
-            el.style.borderRadius = '50%';
-            el.style.border = '3px solid #fff';
-            el.style.boxShadow = '0 0 15px var(--accent)';
-
-            const marker = new mapboxgl.Marker({ element: el })
-                .setLngLat([userLng, userLat])
+            const marker = L.marker([userLat, userLng], { icon: userIcon })
                 .addTo(map.current);
-
             markersRef.current['user-location'] = marker;
         } else {
-            markersRef.current['user-location'].setLngLat([userLng, userLat]);
+            markersRef.current['user-location'].setLatLng([userLat, userLng]);
         }
 
     }, [userLat, userLng]);
 
-    if (!MAPBOX_TOKEN) {
-        return (
-            <div className="directory-map-fallback" style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ textAlign: 'center', color: '#666' }}>
-                    <MapPin size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
-                    <p>Mapbox token missing.<br />Please add VITE_MAPBOX_TOKEN to .env.local</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             {/* The Map Container */}
-            <div ref={mapContainer} className="mapbox-map-container" />
+            <div ref={mapContainer} className="leaflet-map-container" />
 
             {/* Custom Overlay Popup (React-rendered, positioned over map) */}
             {popupInfo && (
@@ -222,7 +208,7 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
                         top: '20px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        zIndex: 10,
+                        zIndex: 1000,
                         background: 'rgba(15, 15, 15, 0.95)',
                         backdropFilter: 'blur(12px)',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -278,7 +264,7 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
                                 {popupInfo.rewardGrams} oz gold
                             </div>
                             <div style={{ fontSize: '0.75rem', color: '#a0a0a0' }}>
-                                ≈ ${popupInfo.rewardCad.toFixed(2)} CAD
+                                {popupInfo.rewardGrams} oz
                             </div>
                         </div>
                     </div>

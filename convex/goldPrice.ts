@@ -5,9 +5,8 @@ import { internal } from "./_generated/api";
 // 1 PAXG = 1 troy ounce = 31.1035 grams
 const GRAMS_PER_TROY_OUNCE = 31.1035;
 
-// Fallback values
-const DEFAULT_GOLD_PRICE_CAD = 237.44;  // CAD per gram (updated to current price)
-// const DEFAULT_PAXG_CAD = 7383.84;      // CAD per PAXG (per troy ounce)
+// Fallback value
+const DEFAULT_PAXG_USD = 2900; // USD per PAXG (per troy ounce)
 
 // ─── Public query: get the latest cached gold price ───
 export const getGoldPrice = query({
@@ -15,10 +14,8 @@ export const getGoldPrice = query({
     handler: async (ctx) => {
         const latest = await ctx.db.query("goldPrice").order("desc").first();
         return {
-            pricePerGram: latest?.pricePerGram ?? DEFAULT_GOLD_PRICE_CAD,
-            paxgCad: latest?.paxgCad ?? (latest as any)?.paxgUsd ?? 0,
-            usdCadRate: latest?.usdCadRate ?? 0,
-            currency: latest?.currency ?? "CAD",
+            pricePerGram: latest?.pricePerGram ?? (DEFAULT_PAXG_USD / GRAMS_PER_TROY_OUNCE),
+            paxgUsd: latest?.paxgUsd ?? DEFAULT_PAXG_USD,
             source: latest?.source ?? "fallback",
             fetchedAt: latest?.fetchedAt ?? null,
         };
@@ -29,8 +26,7 @@ export const getGoldPrice = query({
 export const upsertGoldPrice = internalMutation({
     args: {
         pricePerGram: v.float64(),
-        paxgCad: v.float64(),
-        currency: v.string(),
+        paxgUsd: v.float64(),
         source: v.string(),
     },
     handler: async (ctx, args) => {
@@ -42,9 +38,7 @@ export const upsertGoldPrice = internalMutation({
 
         await ctx.db.insert("goldPrice", {
             pricePerGram: args.pricePerGram,
-            paxgCad: args.paxgCad,       // Storing CAD value here
-            usdCadRate: 0,               // Not needed with CoinGecko direct CAD
-            currency: args.currency,
+            paxgUsd: args.paxgUsd,
             source: args.source,
             fetchedAt: Date.now(),
         });
@@ -56,10 +50,9 @@ export const fetchGoldPrice = action({
     args: {},
     handler: async (ctx): Promise<void> => {
         try {
-            // CoinGecko free API — returns PAXG price directly in CAD
-            // No API key required, generous rate limits
+            // CoinGecko free API — returns PAXG price in USD
             const resp = await fetch(
-                "https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=cad",
+                "https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd",
                 { headers: { Accept: "application/json" } }
             );
 
@@ -69,25 +62,24 @@ export const fetchGoldPrice = action({
             }
 
             const data = await resp.json();
-            const paxgCad = data?.["pax-gold"]?.cad;
+            const paxgUsd = data?.["pax-gold"]?.usd;
 
-            if (!paxgCad || typeof paxgCad !== "number" || paxgCad <= 0) {
-                console.error("Invalid PAXG CAD price from CoinGecko:", data);
+            if (!paxgUsd || typeof paxgUsd !== "number" || paxgUsd <= 0) {
+                console.error("Invalid PAXG USD price from CoinGecko:", data);
                 return;
             }
 
             // PAXG = 1 troy ounce = 31.1035 grams
-            const pricePerGramCad = Math.round((paxgCad / GRAMS_PER_TROY_OUNCE) * 100) / 100;
+            const pricePerGramUsd = Math.round((paxgUsd / GRAMS_PER_TROY_OUNCE) * 100) / 100;
 
             console.log(
-                `✅ Gold price fetched: PAXG=$${paxgCad.toFixed(2)} CAD/oz | ` +
-                `$${pricePerGramCad.toFixed(2)} CAD/g`
+                `Gold price fetched: PAXG=$${paxgUsd.toFixed(2)} USD/oz | ` +
+                `$${pricePerGramUsd.toFixed(2)} USD/g`
             );
 
             await ctx.runMutation(internal.goldPrice.upsertGoldPrice, {
-                pricePerGram: pricePerGramCad,
-                paxgCad: Math.round(paxgCad * 100) / 100,
-                currency: "CAD",
+                pricePerGram: pricePerGramUsd,
+                paxgUsd: Math.round(paxgUsd * 100) / 100,
                 source: "coingecko",
             });
         } catch (err) {

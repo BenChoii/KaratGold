@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import Navbar from './components/layout/Navbar'
 
 // Lazy-loaded page components for code splitting
@@ -46,16 +47,31 @@ function LoadingSpinner() {
     )
 }
 
-// Wrapper that ensures user is signed in
+// Wrapper that ensures user has a connected wallet
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    return (
-        <>
-            <SignedIn>{children}</SignedIn>
-            <SignedOut>
-                <RedirectToSignIn />
-            </SignedOut>
-        </>
-    )
+    const { connected } = useWallet()
+
+    if (!connected) {
+        return (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '60vh',
+                gap: '1.5rem',
+                fontFamily: 'sans-serif',
+            }}>
+                <h2 style={{ fontSize: '1.25rem', color: '#333' }}>Connect your wallet to continue</h2>
+                <p style={{ color: '#666', maxWidth: 400, textAlign: 'center' }}>
+                    You need to connect a Solana wallet (Phantom, Solflare, or Backpack) to access this page.
+                </p>
+                <WalletMultiButton />
+            </div>
+        )
+    }
+
+    return <>{children}</>
 }
 
 function App() {
@@ -85,7 +101,7 @@ function App() {
                             <Route path="/how-it-works/business" element={<HowItWorksBusiness />} />
                             <Route path="/how-cashout-works" element={<HowCashoutWorks />} />
 
-                            {/* Protected — requires sign in */}
+                            {/* Protected — requires wallet connection */}
                             <Route path="/role" element={
                                 <ProtectedRoute><RoleSelect /></ProtectedRoute>
                             } />

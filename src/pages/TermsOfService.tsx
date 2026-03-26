@@ -37,7 +37,7 @@ function TermsOfService() {
                 <section>
                     <h2>4. User Accounts</h2>
                     <p>
-                        Accounts are managed through Clerk, our authentication provider. You are responsible for
+                        Accounts are authenticated via your Solana wallet connection. You are responsible for
                         all activity under your account. You must notify us immediately of any unauthorized use.
                         We reserve the right to suspend or terminate accounts that violate these Terms.
                     </p>

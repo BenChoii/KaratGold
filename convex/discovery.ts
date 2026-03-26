@@ -34,10 +34,6 @@ export const listNearby = query({
             .withIndex("by_status", (q) => q.eq("status", "active"))
             .collect();
 
-        // Get gold price for CAD conversion
-        const goldPrice = await ctx.db.query("goldPrice").order("desc").first();
-        const pricePerOunce = goldPrice?.paxgCad ?? 7384;
-
         // Enrich campaigns with business data + distance
         const enriched = await Promise.all(
             campaigns.map(async (campaign) => {
@@ -91,20 +87,16 @@ export const listNearby = query({
                     distanceKm = distanceKm ?? null;
                 }
 
-                const rewardCad = Math.round(campaign.rewardGrams * pricePerOunce * 100) / 100;
-
                 return {
                     _id: campaign._id,
                     title: campaign.title,
                     description: campaign.description,
                     rewardGrams: campaign.rewardGrams,
-                    rewardCad,
                     maxSubmissions: campaign.maxSubmissions,
                     currentSubmissions: campaign.currentSubmissions,
                     remaining,
                     platforms: campaign.platforms,
                     requirements: campaign.requirements,
-                    currencyMode: campaign.currencyMode ?? "gold",
                     createdAt: campaign.createdAt,
                     // Business info
                     businessId: business._id,
@@ -139,7 +131,7 @@ export const listNearby = query({
                 if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
             }
             // Then by reward (highest first)
-            return b.rewardCad - a.rewardCad;
+            return b.rewardGrams - a.rewardGrams;
         });
 
         return results;

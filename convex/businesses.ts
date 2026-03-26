@@ -94,50 +94,31 @@ export const update = mutation({
     },
 });
 
-// Fund gold pool (supports both gold and CAD)
+// Fund gold pool (PAXG in ounces)
 export const fundPool = mutation({
     args: {
         businessId: v.id("businesses"),
-        amount: v.float64(),
-        currency: v.optional(v.union(v.literal("gold"), v.literal("cad"))),
+        amount: v.float64(), // gold ounces (PAXG)
     },
     handler: async (ctx, args) => {
         const business = await ctx.db.get(args.businessId);
         if (!business) throw new Error("Business not found");
 
-        const mode = args.currency ?? "gold";
-        let goldGrams = args.amount;
-        let cadAmount = 0;
-
-        if (mode === "cad") {
-            // Convert CAD to gold ounces using live price
-            const goldPrice = await ctx.db.query("goldPrice").order("desc").first();
-            const pricePerOunce = goldPrice?.paxgCad ?? 7384;
-            goldGrams = Math.round((args.amount / pricePerOunce) * 100000) / 100000;
-            cadAmount = args.amount;
-        }
-
         await ctx.db.patch(args.businessId, {
-            goldPool: business.goldPool + goldGrams,
-            totalGoldFunded: business.totalGoldFunded + goldGrams,
-            cadBalance: (business.cadBalance ?? 0) + cadAmount,
+            goldPool: business.goldPool + args.amount,
+            totalGoldFunded: business.totalGoldFunded + args.amount,
         });
-
-        // Record the transaction
-        const note = mode === "cad"
-            ? `Funded $${args.amount.toFixed(2)} CAD (≈ ${goldGrams.toFixed(5)}oz) to ${business.name}`
-            : `Funded ${args.amount}oz to ${business.name}`;
 
         await ctx.db.insert("goldTransactions", {
             userId: business.ownerId,
             type: "fund",
-            amount: goldGrams,
+            amount: args.amount,
             businessId: args.businessId,
-            note,
+            note: `Funded ${args.amount} oz PAXG to ${business.name}`,
             createdAt: Date.now(),
         });
 
-        return { newPool: business.goldPool + goldGrams, goldGrams, cadAmount };
+        return { newPool: business.goldPool + args.amount, goldOunces: args.amount };
     },
 });
 

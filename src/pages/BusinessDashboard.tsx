@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Navigate } from 'react-router-dom'
 import { TrendingUp, CheckCircle2, Clock, Users, DollarSign, Eye, XCircle, Plus, Pause, Play, Coins, Loader2, ExternalLink, AlertCircle, Instagram, Facebook, Copy, Wallet } from 'lucide-react'
 import { useQuery, useMutation } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { api } from '../../convex/_generated/api'
 import CreateCampaignModal from '../components/CreateCampaignModal'
 import { AnimatedCounter } from '../components/AnimatedCounter'
@@ -12,17 +12,15 @@ import './BusinessDashboard.css'
 
 
 function BusinessDashboard() {
-    const { user: clerkUser } = useUser()
+    const { publicKey } = useWallet()
+    const walletAddress = publicKey?.toBase58() ?? null
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [showFundDialog, setShowFundDialog] = useState(false)
     const [copiedEscrow, setCopiedEscrow] = useState(false)
 
-    const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
-    const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
-
-    const convexUser = useQuery(api.users.getByClerkId, {
-        clerkId: clerkUser?.id ?? "none",
-    })
+    const convexUser = useQuery(api.users.getByWalletAddress,
+        walletAddress ? { walletAddress } : "skip"
+    )
 
     const business = useQuery(
         api.businesses.getByOwner,
@@ -144,7 +142,7 @@ function BusinessDashboard() {
                             <p className="dash-stat-value">
                                 <AnimatedCounter value={stats.goldRemaining} decimals={3} suffix=" oz" />
                             </p>
-                            <p className="stat-secondary">$<AnimatedCounter value={stats.goldRemaining * GOLD_PRICE_PER_OUNCE} decimals={0} /> CAD · <span style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>+ Fund</span></p>
+                            <p className="stat-secondary"><AnimatedCounter value={stats.goldRemaining} decimals={4} suffix=" PAXG" /> · <span style={{ color: 'var(--accent-dark)', fontWeight: 600 }}>+ Fund</span></p>
                         </div>
                     </motion.div>
                     <motion.div whileHover={{ y: -4, scale: 1.02 }} className="dash-stat card-solid">
@@ -583,7 +581,7 @@ function BusinessDashboard() {
 
                         <div style={{ marginTop: 'var(--space-4)', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                             <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                                <strong>How it works:</strong> Send any amount of PAXG (on the Solana network) to the address above. Once confirmed, your gold pool balance will be updated automatically. Current gold price: <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${GOLD_PRICE_PER_OUNCE.toFixed(2)} CAD/oz</span>.
+                                <strong>How it works:</strong> Send any amount of PAXG (on the Solana network) to the address above. Once confirmed, your gold pool balance will be updated automatically. 1 PAXG = 1 troy ounce of gold.
                             </p>
                         </div>
 

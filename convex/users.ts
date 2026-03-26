@@ -1,11 +1,10 @@
 import { v } from "convex/values";
 import { query, mutation, internalQuery } from "./_generated/server";
-import { Keypair } from "@solana/web3.js";
 
-// Get or create a user from Clerk identity
+// Get or create a user from wallet address
 export const getOrCreate = mutation({
     args: {
-        clerkId: v.string(),
+        walletAddress: v.string(),
         name: v.string(),
         email: v.string(),
         avatarUrl: v.optional(v.string()),
@@ -13,41 +12,15 @@ export const getOrCreate = mutation({
     handler: async (ctx, args) => {
         const existing = await ctx.db
             .query("users")
-            .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+            .withIndex("by_wallet_address", (q) => q.eq("walletAddress", args.walletAddress))
             .unique();
 
         if (existing) {
-            // Retroactive migration for users who signed up before custodial wallets
-            if (!existing.custodialWalletAddress) {
-                const keypair = Keypair.generate();
-                const newWalletAddress = keypair.publicKey.toBase58();
-                const encodedPrivateKey = Array.from(keypair.secretKey)
-                    .map((b) => String.fromCharCode(b))
-                    .join("");
-
-                await ctx.db.patch(existing._id, {
-                    custodialWalletAddress: newWalletAddress,
-                });
-
-                await ctx.db.insert("walletKeys", {
-                    userId: existing._id,
-                    publicKey: newWalletAddress,
-                    encryptedPrivateKey: encodedPrivateKey,
-                    createdAt: Date.now(),
-                });
-            }
             return existing._id;
         }
 
-        // Auto-generate a custodial Solana wallet for the user
-        const keypair = Keypair.generate();
-        const walletAddress = keypair.publicKey.toBase58();
-        const encodedPrivateKey = Array.from(keypair.secretKey)
-            .map((b) => String.fromCharCode(b))
-            .join("");
-
         const userId = await ctx.db.insert("users", {
-            clerkId: args.clerkId,
+            walletAddress: args.walletAddress,
             name: args.name,
             email: args.email,
             avatarUrl: args.avatarUrl,
@@ -55,16 +28,7 @@ export const getOrCreate = mutation({
             goldBalance: 0,
             totalEarned: 0,
             totalCashedOut: 0,
-            walletAddress: walletAddress, // Set initial visible address as the custodial one too
-            custodialWalletAddress: walletAddress,
-            createdAt: Date.now(),
-        });
-
-        // Store private key separately (never exposed to client)
-        await ctx.db.insert("walletKeys", {
-            userId,
-            publicKey: walletAddress,
-            encryptedPrivateKey: encodedPrivateKey,
+            custodialWalletAddress: args.walletAddress,
             createdAt: Date.now(),
         });
 
@@ -72,13 +36,13 @@ export const getOrCreate = mutation({
     },
 });
 
-// Get user by Clerk ID
-export const getByClerkId = query({
-    args: { clerkId: v.string() },
+// Get user by wallet address
+export const getByWalletAddress = query({
+    args: { walletAddress: v.string() },
     handler: async (ctx, args) => {
         return await ctx.db
             .query("users")
-            .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+            .withIndex("by_wallet_address", (q) => q.eq("walletAddress", args.walletAddress))
             .unique();
     },
 });

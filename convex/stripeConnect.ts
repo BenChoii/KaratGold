@@ -1,12 +1,11 @@
+// ============================================================
+// Payments are handled on-chain via Solana / PAXG.
+// Stripe Connect has been fully removed from KaratGold.
+// All payouts go through Solana PAXG transfers.
+// ============================================================
+
 import { v } from "convex/values";
 import { internalMutation, query, httpAction } from "./_generated/server";
-
-// ============================================================
-// Stripe Connect has been removed. All payouts now go through
-// Solana / PAXG transfers. The functions below are kept as
-// stubs so that existing references (schema, admin, etc.)
-// continue to compile while the migration is in progress.
-// ============================================================
 
 // ===== Internal Mutations =====
 
@@ -19,7 +18,6 @@ export const updateWithdrawalStatus = internalMutation({
             v.literal("completed"),
             v.literal("failed")
         ),
-        stripeTransferId: v.optional(v.string()),
         cryptoTxSignature: v.optional(v.string()),
         failureReason: v.optional(v.string()),
     },
@@ -44,8 +42,7 @@ export const getWithdrawals = query({
     },
 });
 
-// Webhook stub — no longer processes Stripe events.
-// Kept so the HTTP route in http.ts doesn't break during migration.
+// Webhook stub — kept so the HTTP route in http.ts doesn't break.
 export const connectWebhook = httpAction(async (_ctx, _request) => {
-    return new Response("Stripe Connect webhook disabled — payouts are now via Solana/PAXG.", { status: 200 });
+    return new Response("Payments are handled on-chain via Solana/PAXG.", { status: 200 });
 });
