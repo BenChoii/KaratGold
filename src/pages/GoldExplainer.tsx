@@ -328,7 +328,7 @@ function GoldExplainer() {
                             {
                                 icon: <Wallet size={26} />,
                                 title: 'Cash Out Anytime',
-                                desc: 'Convert your gold to US dollars whenever you want. No minimums, no waiting periods.',
+                                desc: 'Withdraw your gold as PAXG to your Solana wallet whenever you want. No minimums, no waiting periods.',
                             },
                             {
                                 icon: <Truck size={26} />,

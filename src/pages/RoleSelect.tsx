@@ -81,7 +81,7 @@ function RoleSelect() {
                             </p>
                             <div className="role-perks">
                                 <span><Coins size={14} /> Earn gold per post</span>
-                                <span><ArrowRight size={14} /> Cash out via e-Transfer</span>
+                                <span><ArrowRight size={14} /> Cash out as PAXG</span>
                             </div>
                             <div className="role-cta">
                                 Start Earning <ArrowRight size={16} />

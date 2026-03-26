@@ -72,7 +72,7 @@ export const run = mutation({
                 businessIdx: 0,
                 title: "Summer Promo Campaign",
                 description: "Post a photo enjoying our signature latte. Tag us and share why you love it with your friends.",
-                rewardGrams: 0.0015, // ~$11.00 CAD
+                rewardGrams: 0.0015,
                 maxSubmissions: 100,
                 platforms: ["Instagram"],
                 verificationMethod: "auto",
@@ -81,7 +81,7 @@ export const run = mutation({
                 businessIdx: 1,
                 title: "Review Our Service",
                 description: "Had work done by us? Share a post about your experience and recommend us to your neighbours.",
-                rewardGrams: 0.003, // ~$22.15 CAD
+                rewardGrams: 0.003,
                 maxSubmissions: 50,
                 platforms: ["Instagram"],
                 verificationMethod: "auto",
@@ -90,7 +90,7 @@ export const run = mutation({
                 businessIdx: 2,
                 title: "Before & After Detail",
                 description: "Show the before/after of your car detail. Include our signage and tell your friends.",
-                rewardGrams: 0.004, // ~$29.50 CAD
+                rewardGrams: 0.004,
                 maxSubmissions: 30,
                 platforms: ["Instagram"],
                 verificationMethod: "auto",
@@ -99,7 +99,7 @@ export const run = mutation({
                 businessIdx: 3,
                 title: "Fresh Cut Friday",
                 description: "Post your fresh cut and tag us. Recommend us to your community.",
-                rewardGrams: 0.002, // ~$14.75 CAD
+                rewardGrams: 0.002,
                 maxSubmissions: 50,
                 platforms: ["Instagram"],
                 verificationMethod: "auto",
@@ -108,7 +108,7 @@ export const run = mutation({
                 businessIdx: 4,
                 title: "HVAC Experience Share",
                 description: "Just had an install or service? Share your experience with your local friends and neighbours.",
-                rewardGrams: 0.0035, // ~$25.80 CAD
+                rewardGrams: 0.0035,
                 maxSubmissions: 75,
                 platforms: ["Instagram", "Facebook"],
                 verificationMethod: "manual", // Keep one manual for testing
@@ -117,7 +117,7 @@ export const run = mutation({
                 businessIdx: 5,
                 title: "Brewery Night Out",
                 description: "Share a moment at our brewery with your crew. Show our craft beer and the vibe.",
-                rewardGrams: 0.0025, // ~$18.45 CAD
+                rewardGrams: 0.0025,
                 maxSubmissions: 40,
                 platforms: ["Instagram"],
                 verificationMethod: "auto",
