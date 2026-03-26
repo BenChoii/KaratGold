@@ -23,13 +23,13 @@ function BusinessTeaser() {
                     </div>
                     <h1 className="text-display">Pay for <span className="text-gradient">Performance</span>.<br />Not Impressions.</h1>
                     <p className="text-body teaser-subtitle">
-                        Stop wasting ad spend on bots. Create a campaign and only pay when real local customers post authentic content about your business.
+                        Stop wasting ad spend on bots. Create a campaign and only pay when real customers post authentic content about your business.
                     </p>
 
                     <div className="teaser-perks-grid">
                         <motion.div className="teaser-perk-card" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                             <div className="perk-icon"><Users size={24} /></div>
-                            <h3>Local Reach</h3>
+                            <h3>Real Reach</h3>
                             <p>Turn your best customers into organic affiliates.</p>
                         </motion.div>
                         <motion.div className="teaser-perk-card" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
@@ -75,7 +75,7 @@ function BusinessTeaser() {
                             <span className="metric-value">142</span>
                         </div>
                         <div className="glass-metric-row">
-                            <span className="metric-label">Local Views</span>
+                            <span className="metric-label">Organic Views</span>
                             <span className="metric-value text-accent">~63,900</span>
                         </div>
                         <div className="glass-progress mt-4">

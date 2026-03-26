@@ -160,7 +160,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                         <div className="admin-stat-sub">{stats.completedWithdrawals} completed · {stats.pendingWithdrawals} pending</div>
                     </div>
                     <div className="admin-stat-card">
-                        <div className="admin-stat-label">Stripe Connected</div>
+                        <div className="admin-stat-label">Wallet Connected</div>
                         <div className="admin-stat-value">{stats.stripeConnectedUsers}</div>
                         <div className="admin-stat-sub">of {stats.totalCustomers} customers</div>
                     </div>
@@ -224,7 +224,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                         <th>Gold Balance</th>
                                         <th>Total Earned</th>
                                         <th>Cashed Out</th>
-                                        <th>Stripe</th>
+                                        <th>Wallet</th>
                                         <th>Joined</th>
                                     </tr>
                                 </thead>
@@ -237,7 +237,7 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                             <td style={{ color: 'var(--gold)' }}>{formatGold(u.goldBalance)}</td>
                                             <td>{formatGold(u.totalEarned)}</td>
                                             <td>{formatGold(u.totalCashedOut)}</td>
-                                            <td>{u.stripeConnected ? '✅' : '—'}</td>
+                                            <td>{u.stripeConnected ? '✅' : '—'}</td>{/* TODO: rename field to walletConnected */}
                                             <td>{formatDate(u.createdAt)}</td>
                                         </tr>
                                     ))}
@@ -344,10 +344,10 @@ function DashboardContent({ activeTab, setActiveTab }: { activeTab: Tab; setActi
                                             <td style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{w.userName}</td>
                                             <td>{formatGold(w.amount)}</td>
                                             <td>{formatCAD(w.cadAmount)}</td>
-                                            <td><span className={`status-badge ${w.method === 'stripe' ? 'active' : 'processing'}`}>{w.method}</span></td>
+                                            <td><span className={`status-badge ${w.method === 'crypto' ? 'processing' : 'active'}`}>{w.method === 'crypto' ? 'PAXG' : w.method}</span></td>
                                             <td><span className={`status-badge ${w.status}`}>{w.status}</span></td>
                                             <td style={{ fontSize: '0.75rem', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {w.stripeTransferId || w.cryptoTxSignature || '—'}
+                                                {w.cryptoTxSignature || w.stripeTransferId || '—'}
                                             </td>
                                             <td>{formatDate(w.createdAt)}</td>
                                         </tr>

@@ -24,7 +24,7 @@ export default defineSchema({
         walletAddress: v.optional(v.string()), // For external UI display/connection
         custodialWalletAddress: v.optional(v.string()), // Backend-managed Solana address
         encryptedPrivateKey: v.optional(v.string()), // Backend-managed key
-        // Stripe Connect
+        // Stripe Connect (deprecated — now using Solana/PAXG)
         stripeConnectAccountId: v.optional(v.string()),
         stripeConnectOnboarded: v.optional(v.boolean()),
         stripePayoutMethod: v.optional(v.union(v.literal("bank"), v.literal("debit"))),

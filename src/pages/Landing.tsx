@@ -30,7 +30,7 @@ function VerifyCard() {
         { label: 'Hashtag #ad detected', icon: '🏷️' },
         { label: 'Business @BeanScene tagged', icon: '📍' },
         { label: 'Photo quality score: 94', icon: '📸' },
-        { label: 'Kelowna location match', icon: '✅' }
+        { label: 'Location verified', icon: '✅' }
     ]
     const [phase, setPhase] = useState(0)
 
@@ -64,8 +64,8 @@ function VerifyCard() {
                     <div className="verify-user-row">
                         <div className="verify-user-avatar">S</div>
                         <div className="verify-user-info">
-                            <span className="verify-user-name">sarah.kelowna</span>
-                            <span className="verify-user-loc">Bean Scene Café · Kelowna</span>
+                            <span className="verify-user-name">sarah.explorer</span>
+                            <span className="verify-user-loc">Bean Scene Café</span>
                         </div>
                         <Instagram size={14} style={{ color: 'rgba(255,255,255,0.3)' }} />
                     </div>
@@ -94,7 +94,7 @@ function VerifyCard() {
 
                     {/* Caption */}
                     <div className="verify-post-caption-row">
-                        <span>Great coffee at <strong>@BeanScene</strong>! ☕ <span style={{ color: 'rgba(255,255,255,0.4)' }}>#ad #kelowna</span></span>
+                        <span>Great coffee at <strong>@BeanScene</strong>! ☕ <span style={{ color: 'rgba(255,255,255,0.4)' }}>#ad #karatgold</span></span>
                     </div>
                 </div>
 
@@ -253,7 +253,7 @@ function MapCard() {
                 <div className="mock-map-area">
                     <img
                         className="mock-map-bg"
-                        src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/-119.496,49.888,13,0/600x800@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
+                        src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/0,20,1.5,0/600x800@2x?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}`}
                         alt=""
                         loading="lazy"
                         draggable={false}
@@ -363,7 +363,7 @@ function ROICalculator() {
     const payoutPerPost = 10; // $10 CAD minimum per post
 
     const guaranteedPosts = Math.floor(budget / payoutPerPost);
-    const estimatedImpressions = guaranteedPosts * 450; // Conservative 450 views per local follower
+    const estimatedImpressions = guaranteedPosts * 450; // Conservative 450 views per creator
 
     return (
         <section id="for-business" className="roi-calculator-section">
@@ -446,7 +446,7 @@ function ROICalculator() {
                                 <div className="roi-metric">
                                     <div className="metric-header">
                                         <div className="metric-value">~{estimatedImpressions.toLocaleString()}</div>
-                                        <span className="metric-name">High-Trust Local Views</span>
+                                        <span className="metric-name">High-Trust Organic Views</span>
                                     </div>
                                     <div className="metric-bar-bg"><div className="metric-bar-fill highlight-gold" style={{ width: `${Math.min(100, (estimatedImpressions / 150000) * 100)}%` }}></div></div>
                                 </div>
@@ -461,7 +461,7 @@ function ROICalculator() {
                         </div>
                     </div>
                     <div className="roi-disclaimer">
-                        *Estimates based on a minimum reward of $10 CAD per post, and a conservative baseline of 450 views per local creator.
+                        *Estimates based on a minimum reward of $10 CAD per post, and a conservative baseline of 450 views per creator.
                     </div>
                 </div>
             </div>
@@ -537,11 +537,11 @@ function Landing() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.2 }}
                         >
-                            Earn <span className="text-gradient">Gold</span> for
+                            Earn <span className="text-gradient">Real Gold</span> by
                             <br />
-                            Supporting Okanagan
+                            Posting About Businesses
                             <br />
-                            Local Businesses
+                            You Love
                         </motion.h1>
 
                         <motion.p
@@ -550,9 +550,9 @@ function Landing() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ type: "spring", stiffness: 100, damping: 22, delay: 0.4 }}
                         >
-                            Support Okanagan businesses you love.
+                            The global rewards platform powered by gold.
                             <br />
-                            Earn real fractional gold.
+                            Post. Verify. Earn real fractional gold.
                         </motion.p>
 
                         <motion.div
@@ -663,7 +663,7 @@ function Landing() {
                         <p className="trust-partners-label">Powered by industry leaders</p>
                         <div className="trust-partners-row">
                             <div className="trust-partner">
-                                <span className="partner-name">stripe</span>
+                                <span className="partner-name">Solana</span>
                                 <span className="partner-role">Payments</span>
                             </div>
                             <div className="trust-partner-divider" />
@@ -713,8 +713,8 @@ function Landing() {
 
                         <div className="hiw-steps-text">
                             <div className={`hiw-step-desc hiw-step-desc-wrap ${activeHiwStep === 0 ? 'active' : ''}`}>
-                                <h3>01. Hunt Local Bounties</h3>
-                                <p>Open the Explore map and find local Okanagan businesses paying bounties for authentic social posts.</p>
+                                <h3>01. Hunt Gold Bounties</h3>
+                                <p>Open the Explore map and find businesses near you paying bounties for authentic social posts.</p>
                             </div>
                             <div className="hiw-step-spacer hide-mobile"></div>
                             <div className={`hiw-step-desc hiw-step-desc-wrap ${activeHiwStep === 1 ? 'active' : ''}`}>
@@ -902,7 +902,7 @@ function Landing() {
                                     <span className="logo-oktd-icon">🍁</span>
                                 </div>
                             </div>
-                            <p className="footer-brand-mission">Monetizing social capital through real assets. Transparent, automated, and built for local economies.</p>
+                            <p className="footer-brand-mission">Monetizing social capital through real assets. Transparent, automated, and built for the global creator economy.</p>
                             <div className="footer-socials">
                                 <a href="#" aria-label="Instagram"><Instagram size={20} /></a>
                                 <a href="#" aria-label="Twitter">

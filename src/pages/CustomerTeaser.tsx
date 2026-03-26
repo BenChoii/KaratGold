@@ -23,14 +23,14 @@ function CustomerTeaser() {
                     </div>
                     <h1 className="text-display">Turn your social<br />posts into <span className="text-gradient">Gold</span>.</h1>
                     <p className="text-body teaser-subtitle">
-                        Discover local Okanagan businesses, post authentic content, and get paid instantly in real, vaulted gold.
+                        Discover businesses you love, post authentic content, and get paid instantly in real, vaulted gold.
                     </p>
 
                     <div className="teaser-perks-grid">
                         <motion.div className="teaser-perk-card" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                             <div className="perk-icon"><Camera size={24} /></div>
                             <h3>Post & Tag</h3>
-                            <p>Share local spots on Instagram</p>
+                            <p>Share great spots on Instagram</p>
                         </motion.div>
                         <motion.div className="teaser-perk-card" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                             <div className="perk-icon"><ShieldCheck size={24} /></div>

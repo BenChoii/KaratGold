@@ -8,43 +8,12 @@ declare var process: { env: Record<string, string | undefined> };
 declare var Buffer: { from(data: ArrayBuffer): { toString(encoding: string): string } };
 
 // ─── AI Verification Engine ───
-// Supports two AI backends:
-//   1. Google AI Studio (GEMINI_API_KEY) — free, recommended
-//   2. OpenRouter (OPENROUTER_API_KEY) — paid, fallback
+// Uses OpenRouter free models for AI verification
+// Default model: google/gemini-2.0-flash-exp:free (via OpenRouter)
 // Analyzes uploaded screenshots against campaign requirements
 // Extracts: approval status, confidence, reason, followerCount
 
-async function callGeminiDirect(apiKey: string, prompt: string, imageBase64: string | null): Promise<any> {
-    const parts: any[] = [{ text: prompt }];
-    if (imageBase64) {
-        parts.push({
-            inline_data: {
-                mime_type: "image/jpeg",
-                data: imageBase64,
-            },
-        });
-    }
-
-    const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts }],
-                generationConfig: { temperature: 0.1, maxOutputTokens: 400 },
-            }),
-        }
-    );
-
-    if (!resp.ok) {
-        const errText = await resp.text();
-        throw new Error(`Gemini API ${resp.status}: ${errText}`);
-    }
-
-    const data = await resp.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-}
+const OPENROUTER_MODEL = "google/gemini-2.0-flash-exp:free";
 
 async function callOpenRouter(apiKey: string, prompt: string, imageBase64: string | null): Promise<any> {
     const userContent: any[] = imageBase64
@@ -63,7 +32,7 @@ async function callOpenRouter(apiKey: string, prompt: string, imageBase64: strin
             "X-Title": "Karat Gold Verification",
         },
         body: JSON.stringify({
-            model: "google/gemini-2.0-flash-001",
+            model: OPENROUTER_MODEL,
             messages: [
                 { role: "system", content: "You are a social media post verification AI. Respond ONLY in valid JSON — no markdown, no code fences." },
                 { role: "user", content: userContent },
@@ -83,17 +52,16 @@ export const verifySubmission = action({
         submissionId: v.id("submissions"),
     },
     handler: async (ctx, args): Promise<void> => {
-        // Check for API keys — prefer Google AI Studio (free), fall back to OpenRouter
-        const geminiKey = process.env.GEMINI_API_KEY;
+        // Check for OpenRouter API key
         const openrouterKey = process.env.OPENROUTER_API_KEY;
 
-        if (!geminiKey && !openrouterKey) {
-            console.error("No AI API key set (GEMINI_API_KEY or OPENROUTER_API_KEY) — auto-approving");
+        if (!openrouterKey) {
+            console.error("No OPENROUTER_API_KEY set — auto-approving");
             await ctx.runMutation(internal.ai.applyVerdict, {
                 submissionId: args.submissionId,
                 approved: true,
                 confidence: 75,
-                reason: "AI verification unavailable — auto-approved (set GEMINI_API_KEY in Convex dashboard)",
+                reason: "AI verification unavailable — auto-approved (set OPENROUTER_API_KEY in Convex dashboard)",
                 followerCount: 0,
             });
             return;
@@ -162,13 +130,8 @@ Respond ONLY in valid JSON — no code fences, no extra text:
         try {
             let raw: string;
 
-            if (geminiKey) {
-                console.log("[AI] Using Google AI Studio (Gemini) for verification");
-                raw = await callGeminiDirect(geminiKey, prompt, imageBase64);
-            } else {
-                console.log("[AI] Using OpenRouter for verification");
-                raw = await callOpenRouter(openrouterKey!, prompt, imageBase64);
-            }
+            console.log(`[AI] Using OpenRouter (${OPENROUTER_MODEL}) for verification`);
+            raw = await callOpenRouter(openrouterKey, prompt, imageBase64);
 
             // Parse JSON from response (strip potential markdown fences)
             const jsonStr = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();

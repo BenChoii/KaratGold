@@ -18,7 +18,7 @@ function TermsOfService() {
                 <section>
                     <h2>2. Description of Service</h2>
                     <p>
-                        KaratGold is a pay-per-performance marketing platform that connects local Okanagan
+                        KaratGold is a pay-per-performance marketing platform that connects
                         businesses with social media users. Businesses create campaigns that reward users with
                         fractional tokenized gold (PAXG) for creating authentic social media posts about
                         participating businesses.
@@ -47,7 +47,7 @@ function TermsOfService() {
                     <h2>5. Campaigns & Rewards</h2>
                     <h3>5.1 For Businesses</h3>
                     <ul>
-                        <li>You fund campaigns by purchasing gold reserves through our integrated payment provider (Stripe).</li>
+                        <li>You fund campaigns by sending PAXG tokens to your campaign escrow wallet on the Solana network.</li>
                         <li>A 20% platform fee is deducted from each campaign budget at the time of creation.</li>
                         <li>Campaigns are subject to our content guidelines and may be removed at our discretion.</li>
                         <li>Refunds for unused campaign funds are handled on a case-by-case basis.</li>
@@ -65,7 +65,7 @@ function TermsOfService() {
                 <section>
                     <h2>6. Payments & Financial Terms</h2>
                     <ul>
-                        <li>All payments are processed through Stripe. By making a purchase, you also agree to Stripe's terms of service.</li>
+                        <li>All payments are processed on the Solana blockchain via PAXG token transfers. By using the platform, you agree to the risks associated with cryptocurrency transactions.</li>
                         <li>Gold balances on the platform represent fractional ownership claims tracked on our internal ledger.</li>
                         <li>Withdrawals are processed as cryptocurrency transfers from our custodial Master Wallet to your designated address.</li>
                         <li>We are not a bank, exchange, or licensed financial institution. Gold balances are not insured deposits.</li>

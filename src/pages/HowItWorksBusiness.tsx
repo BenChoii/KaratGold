@@ -89,7 +89,7 @@ function HowItWorksBusiness() {
                     <motion.div className="step-cards" initial="hidden" whileInView="visible" viewport={{ once: true }}>
                         {[
                             { icon: <Megaphone size={22} />, title: 'Set Campaign Details', desc: 'Choose a title, description, which platforms (Instagram/Facebook), reward amount per post, and max submissions.', num: '01' },
-                            { icon: <Users size={22} />, title: 'Customers Discover', desc: 'Active campaigns appear on the Explore page. Local customers browse and find your campaign.', num: '02' },
+                            { icon: <Users size={22} />, title: 'Customers Discover', desc: 'Active campaigns appear on the Explore page. Customers browse and find your campaign.', num: '02' },
                             { icon: <ShieldCheck size={22} />, title: 'Posts Get Verified', desc: 'Submitted posts are automatically verified by AI or manually reviewed by you — your choice.', num: '03' },
                             { icon: <DollarSign size={22} />, title: 'Gold Auto-Distributes', desc: 'Verified posts instantly credit the customer\'s gold balance from your campaign pool. You only pay for real content.', num: '04' },
                         ].map((step, i) => (
@@ -110,13 +110,13 @@ function HowItWorksBusiness() {
                     <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
                         <span className="section-num">2</span> Funding Your Pool
                     </motion.h2>
-                    <p>Before creating campaigns, you fund your gold pool. Funds are converted to gold at the current market rate.</p>
+                    <p>Before creating campaigns, you fund your gold pool by sending PAXG tokens to your campaign escrow wallet on Solana.</p>
 
                     <motion.div className="step-cards" initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
                         <motion.div className="step-card" variants={fadeUp} custom={0}>
                             <div className="step-card-icon"><DollarSign size={22} /></div>
-                            <h3>Pay with Credit Card</h3>
-                            <p>Click "Fund Pool" on your dashboard. Enter an amount ($100 CAD minimum) and pay securely via Stripe.</p>
+                            <h3>Send PAXG to Escrow</h3>
+                            <p>Click "Fund Pool" on your dashboard to see your campaign escrow wallet address. Send PAXG tokens (on the Solana network) to fund your pool.</p>
                         </motion.div>
                         <motion.div className="step-card" variants={fadeUp} custom={1}>
                             <div className="step-card-icon"><BarChart3 size={22} /></div>
@@ -125,8 +125,8 @@ function HowItWorksBusiness() {
                         </motion.div>
                         <motion.div className="step-card" variants={fadeUp} custom={2}>
                             <div className="step-card-icon"><CheckCircle2 size={22} /></div>
-                            <h3>Instant Gold Conversion</h3>
-                            <p>Your CAD is converted to gold ounces at the live spot price. Your pool balance updates in real-time.</p>
+                            <h3>On-Chain Confirmation</h3>
+                            <p>Once your PAXG deposit is confirmed on the Solana blockchain, your gold pool balance updates automatically. No credit cards needed.</p>
                         </motion.div>
                     </motion.div>
                 </div>
@@ -198,7 +198,7 @@ function HowItWorksBusiness() {
                         Frequently Asked Questions
                     </motion.h2>
                     <FAQ items={[
-                        { q: 'How much does it cost to get started?', a: 'The minimum deposit is $100 CAD. There are no monthly fees — you only pay when customers create verified content.' },
+                        { q: 'How much does it cost to get started?', a: 'Send any amount of PAXG to your escrow wallet to fund your pool. There are no monthly fees — you only pay when customers create verified content.' },
                         { q: 'Can I pause a campaign?', a: 'Yes, you can pause and resume campaigns anytime from your dashboard. Paused campaigns are hidden from the Explore page.' },
                         { q: 'What happens to unused funds?', a: 'Unused funds remain in your gold pool. They\'re available for future campaigns and their value may appreciate with gold prices.' },
                         { q: 'How do I know posts are real?', a: 'AI verification scans for the correct business tag, content relevance, and posting authenticity. Manual review gives you full control to approve only posts that meet your standards.' },
@@ -217,7 +217,7 @@ function HowItWorksBusiness() {
                     viewport={{ once: true }}
                 >
                     <h2>Ready to Launch Your First Campaign?</h2>
-                    <p>Fund your pool, create a campaign, and start getting real exposure from real customers.</p>
+                    <p>Fund your pool with PAXG, create a campaign, and start getting real exposure from real customers.</p>
                     <div className="explainer-cta-buttons">
                         <Link to="/dashboard" className="btn btn-primary btn-lg">
                             Go to Dashboard <ArrowRight size={18} />

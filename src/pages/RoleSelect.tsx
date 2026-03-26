@@ -76,7 +76,7 @@ function RoleSelect() {
                             </div>
                             <h3 className="text-h3">I'm a Customer</h3>
                             <p className="text-body-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
-                                Earn real gold by sharing posts about Okanagan businesses you love
+                                Earn real gold by sharing posts about businesses you love
                             </p>
                             <div className="role-perks">
                                 <span><Coins size={14} /> Earn gold per post</span>
@@ -101,11 +101,11 @@ function RoleSelect() {
                             </div>
                             <h3 className="text-h3">I'm a Business Owner</h3>
                             <p className="text-body-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
-                                Create campaigns and reward the Okanagan community with gold for authentic posts
+                                Create campaigns and reward your community with gold for authentic posts
                             </p>
                             <div className="role-perks">
                                 <span><BarChart3 size={14} /> Track engagement</span>
-                                <span><Users size={14} /> Build local reach</span>
+                                <span><Users size={14} /> Build real reach</span>
                             </div>
                             <div className="role-cta">
                                 Create Campaign <ArrowRight size={16} />

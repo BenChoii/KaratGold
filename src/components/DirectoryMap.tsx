@@ -43,8 +43,8 @@ export function DirectoryMap({ campaigns, userLat, userLng }: DirectoryMapProps)
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: MAP_STYLE,
-            center: [userLng ?? -119.4960, userLat ?? 49.8880],
-            zoom: 11,
+            center: [userLng ?? 0, userLat ?? 20],
+            zoom: userLng ? 11 : 2,
             pitch: 45,
             bearing: 0
         });

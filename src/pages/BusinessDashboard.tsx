@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Navigate } from 'react-router-dom'
-import { TrendingUp, CheckCircle2, Clock, Users, DollarSign, Eye, XCircle, Plus, Pause, Play, Coins, Loader2, ExternalLink, AlertCircle, Instagram, Facebook } from 'lucide-react'
-import { useQuery, useMutation, useAction } from 'convex/react'
+import { TrendingUp, CheckCircle2, Clock, Users, DollarSign, Eye, XCircle, Plus, Pause, Play, Coins, Loader2, ExternalLink, AlertCircle, Instagram, Facebook, Copy, Wallet } from 'lucide-react'
+import { useQuery, useMutation } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
 import CreateCampaignModal from '../components/CreateCampaignModal'
@@ -15,11 +15,7 @@ function BusinessDashboard() {
     const { user: clerkUser } = useUser()
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [showFundDialog, setShowFundDialog] = useState(false)
-    const [fundAmount, setFundAmount] = useState('')
-    const [fundCurrency, setFundCurrency] = useState<'gold' | 'cad'>('gold')
-    const [funding, setFunding] = useState(false)
-
-    const createCheckoutSession = useAction(api.stripe.createCheckoutSession)
+    const [copiedEscrow, setCopiedEscrow] = useState(false)
 
     const goldPriceData = useQuery(api.goldPrice.getGoldPrice)
     const GOLD_PRICE_PER_OUNCE = goldPriceData?.paxgCad ?? 2900
@@ -80,34 +76,13 @@ function BusinessDashboard() {
         setRejectingId(null)
     }
 
-    const handleFundGold = async () => {
-        if (!business || !fundAmount || parseFloat(fundAmount) <= 0) return
+    // Escrow wallet address for PAXG funding
+    const ESCROW_WALLET_ADDRESS = 'KRTgLD...EscrowWalletAddress' // TODO: replace with real escrow Solana address
 
-        setFunding(true)
-        try {
-            const cadAmount = fundCurrency === 'cad'
-                ? parseFloat(fundAmount)
-                : parseFloat(fundAmount) * GOLD_PRICE_PER_OUNCE
-
-            if (cadAmount < 100) {
-                alert("Minimum funding amount is $100 CAD.")
-                setFunding(false)
-                return
-            }
-
-            const checkoutUrl = await createCheckoutSession({
-                businessId: business._id,
-                cadAmount,
-                successUrl: `${window.location.origin}/dashboard?fund_success=true`,
-                cancelUrl: `${window.location.origin}/dashboard?fund_canceled=true`,
-            })
-
-            window.location.href = checkoutUrl
-        } catch (err: any) {
-            console.error('Funding error:', err)
-            alert(err.message || "Failed to initiate funding session.")
-            setFunding(false)
-        }
+    const handleCopyEscrow = () => {
+        navigator.clipboard.writeText(ESCROW_WALLET_ADDRESS)
+        setCopiedEscrow(true)
+        setTimeout(() => setCopiedEscrow(false), 2000)
     }
 
     if (convexUser === undefined || business === undefined || stats === undefined) {
@@ -575,69 +550,45 @@ function BusinessDashboard() {
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         onClick={e => e.stopPropagation()}
                     >
-                        <h3 className="text-h3">Fund Your Pool</h3>
+                        <h3 className="text-h3">
+                            <Wallet size={20} style={{ marginRight: 8, color: 'var(--gold)' }} />
+                            Fund Your Pool with PAXG
+                        </h3>
                         <p className="text-body-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
-                            Add funds to your pool so you can launch campaigns
+                            Send PAXG tokens to the escrow wallet below to fund your campaign pool. Your balance will update once the transaction is confirmed on-chain.
                         </p>
 
-                        {/* Currency Toggle */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: 'var(--space-4)' }}>
-                            <button
-                                type="button"
-                                className={`btn btn-sm ${fundCurrency === 'gold' ? 'btn-primary' : 'btn-ghost'}`}
-                                onClick={() => setFundCurrency('gold')}
-                                style={{ flex: 1 }}
-                            >
-                                <Coins size={14} style={{ marginRight: 6, fill: fundCurrency === 'gold' ? 'var(--gold)' : 'currentColor' }} /> Gold (ounces)
-                            </button>
-                            <button
-                                type="button"
-                                className={`btn btn-sm ${fundCurrency === 'cad' ? 'btn-primary' : 'btn-ghost'}`}
-                                onClick={() => setFundCurrency('cad')}
-                                style={{ flex: 1 }}
-                            >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill={fundCurrency === 'cad' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
-                                    <path d="M12 2v20" />
-                                    <path d="M12 2l-3 6-5-2 4 5-3 6 7-2 7 2-3-6 4-5-5 2-3-6z" />
-                                </svg> CAD (dollars)
-                            </button>
+                        <div style={{ marginTop: 'var(--space-6)' }}>
+                            <label style={{ fontSize: '0.8125rem', fontWeight: 600, display: 'block', marginBottom: 'var(--space-2)' }}>
+                                Campaign Escrow Wallet (Solana)
+                            </label>
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                background: 'rgba(212, 165, 55, 0.06)', border: '1px solid rgba(212, 165, 55, 0.2)',
+                                borderRadius: 'var(--radius-md)', padding: 'var(--space-3)',
+                            }}>
+                                <code style={{ flex: 1, fontSize: '0.85rem', color: 'var(--gold)', wordBreak: 'break-all' }}>
+                                    {ESCROW_WALLET_ADDRESS}
+                                </code>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={handleCopyEscrow}
+                                    style={{ flexShrink: 0 }}
+                                >
+                                    <Copy size={14} />
+                                    {copiedEscrow ? 'Copied!' : 'Copy'}
+                                </button>
+                            </div>
                         </div>
 
-                        <div style={{ marginTop: 'var(--space-4)' }}>
-                            <label style={{ fontSize: '0.8125rem', fontWeight: 600, display: 'block', marginBottom: 'var(--space-2)' }}>
-                                {fundCurrency === 'gold' ? 'Amount (ounces)' : 'Amount (CAD)'}
-                            </label>
-                            <input
-                                type="number"
-                                className="input"
-                                placeholder={fundCurrency === 'gold' ? 'e.g. 1.0' : 'e.g. 100.00'}
-                                min="0.01"
-                                step={fundCurrency === 'gold' ? '0.01' : '1'}
-                                value={fundAmount}
-                                onChange={e => setFundAmount(e.target.value)}
-                            />
-                            {fundAmount && (
-                                <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
-                                    {fundCurrency === 'gold'
-                                        ? `≈ $${(parseFloat(fundAmount) * GOLD_PRICE_PER_OUNCE).toFixed(2)} CAD`
-                                        : `≈ ${(parseFloat(fundAmount) / GOLD_PRICE_PER_OUNCE).toFixed(4)} oz gold at $${GOLD_PRICE_PER_OUNCE.toFixed(2)}/oz`
-                                    }
-                                </p>
-                            )}
+                        <div style={{ marginTop: 'var(--space-4)', padding: 'var(--space-3)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+                            <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                                <strong>How it works:</strong> Send any amount of PAXG (on the Solana network) to the address above. Once confirmed, your gold pool balance will be updated automatically. Current gold price: <span style={{ color: 'var(--gold)', fontWeight: 600 }}>${GOLD_PRICE_PER_OUNCE.toFixed(2)} CAD/oz</span>.
+                            </p>
                         </div>
+
                         <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', marginTop: 'var(--space-6)' }}>
-                            <button className="btn btn-ghost" onClick={() => setShowFundDialog(false)}>Cancel</button>
-                            <button
-                                className="btn btn-primary"
-                                disabled={!fundAmount || parseFloat(fundAmount) <= 0 || funding}
-                                onClick={handleFundGold}
-                            >
-                                {funding ? (
-                                    <><Loader2 size={16} className="spinning" /> Funding...</>
-                                ) : (
-                                    <><Coins size={16} /> {fundCurrency === 'gold' ? 'Fund Gold' : 'Fund with CAD'}</>
-                                )}
-                            </button>
+                            <button className="btn btn-ghost" onClick={() => setShowFundDialog(false)}>Close</button>
                         </div>
                     </motion.div>
                 </motion.div>

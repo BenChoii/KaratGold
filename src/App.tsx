@@ -1,25 +1,50 @@
+import React, { Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import Navbar from './components/layout/Navbar'
-import Landing from './pages/Landing'
-import CustomerRewards from './pages/CustomerRewards'
-import BusinessDashboard from './pages/BusinessDashboard'
-import CustomerExplore from './pages/CustomerExplore'
-import CustomerSubmit from './pages/CustomerSubmit'
-import RoleSelect from './pages/RoleSelect'
-import BusinessOnboard from './pages/BusinessOnboard'
-import GoldExplainer from './pages/GoldExplainer'
-import CoinbaseGuide from './pages/CoinbaseGuide'
-import ScanPage from './pages/ScanPage'
-import PreAuthJoin from './pages/PreAuthJoin'
-import CustomerTeaser from './pages/CustomerTeaser'
-import BusinessTeaser from './pages/BusinessTeaser'
-import PrivacyPolicy from './pages/PrivacyPolicy'
-import TermsOfService from './pages/TermsOfService'
-import AdminDashboard from './pages/AdminDashboard'
-import HowItWorksCustomer from './pages/HowItWorksCustomer'
-import HowItWorksBusiness from './pages/HowItWorksBusiness'
-import HowCashoutWorks from './pages/HowCashoutWorks'
+
+// Lazy-loaded page components for code splitting
+const Landing = React.lazy(() => import('./pages/Landing'))
+const CustomerRewards = React.lazy(() => import('./pages/CustomerRewards'))
+const BusinessDashboard = React.lazy(() => import('./pages/BusinessDashboard'))
+const CustomerExplore = React.lazy(() => import('./pages/CustomerExplore'))
+const CustomerSubmit = React.lazy(() => import('./pages/CustomerSubmit'))
+const RoleSelect = React.lazy(() => import('./pages/RoleSelect'))
+const BusinessOnboard = React.lazy(() => import('./pages/BusinessOnboard'))
+const GoldExplainer = React.lazy(() => import('./pages/GoldExplainer'))
+const CoinbaseGuide = React.lazy(() => import('./pages/CoinbaseGuide'))
+const ScanPage = React.lazy(() => import('./pages/ScanPage'))
+const PreAuthJoin = React.lazy(() => import('./pages/PreAuthJoin'))
+const CustomerTeaser = React.lazy(() => import('./pages/CustomerTeaser'))
+const BusinessTeaser = React.lazy(() => import('./pages/BusinessTeaser'))
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'))
+const HowItWorksCustomer = React.lazy(() => import('./pages/HowItWorksCustomer'))
+const HowItWorksBusiness = React.lazy(() => import('./pages/HowItWorksBusiness'))
+const HowCashoutWorks = React.lazy(() => import('./pages/HowCashoutWorks'))
+
+function LoadingSpinner() {
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '60vh',
+            backgroundColor: '#FAFAF8',
+        }}>
+            <div style={{
+                width: 40,
+                height: 40,
+                border: '4px solid #e0e0dc',
+                borderTop: '4px solid #2DD4A0',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+            }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+    )
+}
 
 // Wrapper that ensures user is signed in
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -35,6 +60,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
     return (
+        <Suspense fallback={<LoadingSpinner />}>
         <Routes>
             {/* Public scan page — no Navbar, no auth (Playwright visits this) */}
             <Route path="/scan/:businessId" element={<ScanPage />} />
@@ -86,6 +112,7 @@ function App() {
                 </div>
             } />
         </Routes>
+        </Suspense>
     )
 }
 

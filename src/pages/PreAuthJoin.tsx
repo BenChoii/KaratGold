@@ -36,7 +36,7 @@ function PreAuthJoin() {
                                 </div>
                                 <h3 className="text-h3" style={{ marginBottom: 'var(--space-2)' }}>I'm a Patron</h3>
                                 <p className="text-body-sm" style={{ color: 'var(--text-secondary)', flexGrow: 1 }}>
-                                    Earn real gold by sharing posts about Okanagan businesses you love.
+                                    Earn real gold by sharing posts about businesses you love.
                                 </p>
                                 <div className="role-cta" style={{ marginTop: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold-dark)', fontWeight: 600 }}>
                                     Start Earning <ArrowRight size={16} />
@@ -59,7 +59,7 @@ function PreAuthJoin() {
                                 </div>
                                 <h3 className="text-h3" style={{ marginBottom: 'var(--space-2)' }}>I'm a Business Owner</h3>
                                 <p className="text-body-sm" style={{ color: 'var(--text-secondary)', flexGrow: 1 }}>
-                                    Create campaigns and reward the Okanagan community with gold for authentic posts.
+                                    Create campaigns and reward your community with gold for authentic posts.
                                 </p>
                                 <div className="role-cta" style={{ marginTop: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-dark)', fontWeight: 600 }}>
                                     Create Campaign <ArrowRight size={16} />

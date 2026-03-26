@@ -18,7 +18,7 @@ function CoinbaseGuide() {
                     </Link>
                     <h1 className="text-display">How to Cash Out</h1>
                     <p className="text-body-lg" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
-                        Okanagan Gold uses USDC (a digital dollar) on the Solana network to send your cash out instantly, with near-zero fees. Here's how to receive it using Coinbase.
+                        Karat Gold uses USDC (a digital dollar) on the Solana network to send your cash out instantly, with near-zero fees. Here's how to receive it using Coinbase.
                     </p>
                 </div>
             </motion.div>
@@ -108,7 +108,7 @@ function CoinbaseGuide() {
                             </p>
                             <ul className="guide-list">
                                 <li>Tap the <strong>Copy</strong> button next to your USDC (Solana) address.</li>
-                                <li>Come back to the Okanagan Gold Cash Out popup.</li>
+                                <li>Come back to the Karat Gold Cash Out popup.</li>
                                 <li>Paste that address into the "Transfer Destination" field.</li>
                             </ul>
                         </div>

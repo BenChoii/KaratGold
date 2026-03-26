@@ -158,7 +158,7 @@ function GoldExplainer() {
                             {
                                 icon: <Building2 size={24} />,
                                 title: 'Business Funds Campaign',
-                                desc: 'A local Okanagan business creates a campaign and deposits funds. These funds are converted to PAXG (Paxos Gold) — a fully regulated, gold-backed token on Solana.',
+                                desc: 'A business creates a campaign and deposits funds. These funds are converted to PAXG (Paxos Gold) — a fully regulated, gold-backed token on Solana.',
                                 num: '1',
                             },
                             {
@@ -463,7 +463,7 @@ function GoldExplainer() {
                     >
                         <h2 className="text-h1">Start Earning Real Gold Today</h2>
                         <p className="text-body">
-                            Support Okanagan businesses you love and earn gold-backed rewards that actually appreciate in value.
+                            Support businesses you love and earn gold-backed rewards that actually appreciate in value.
                         </p>
                         <div className="gold-cta-buttons">
                             <Link to="/explore" className="btn btn-primary btn-lg">

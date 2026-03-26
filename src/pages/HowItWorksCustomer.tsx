@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
     Coins, Camera, ShieldCheck, Wallet, Search, Upload,
-    CreditCard, ArrowRight, ChevronDown, Sparkles, CheckCircle2
+    ArrowRight, ChevronDown, Sparkles, CheckCircle2
 } from 'lucide-react'
 import './ExplainerPage.css'
 
@@ -62,7 +62,7 @@ function HowItWorksCustomer() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    Discover local businesses, share authentic content, and get rewarded with real gold. Here's everything you need to know.
+                    Discover businesses, share authentic content, and get rewarded with real gold. Here's everything you need to know.
                 </motion.p>
             </section>
 
@@ -76,7 +76,7 @@ function HowItWorksCustomer() {
 
                     <motion.div className="step-cards" initial="hidden" whileInView="visible" viewport={{ once: true }}>
                         {[
-                            { icon: <Search size={22} />, title: 'Browse Campaigns', desc: 'Visit the Explore page to find active campaigns from Okanagan businesses. Each shows the reward amount and what\'s required.', num: '01' },
+                            { icon: <Search size={22} />, title: 'Browse Campaigns', desc: 'Visit the Explore page to find active campaigns from businesses near you. Each shows the reward amount and what\'s required.', num: '01' },
                             { icon: <Camera size={22} />, title: 'Visit & Post', desc: 'Visit the business, take a photo, and post it on Instagram or Facebook. Tag the business and include #KaratGold.', num: '02' },
                             { icon: <Upload size={22} />, title: 'Submit Your Post', desc: 'Go to the Submit page, select the campaign, and paste your post URL or upload a screenshot. That\'s it!', num: '03' },
                             { icon: <Coins size={22} />, title: 'Earn Gold', desc: 'Once verified, gold is instantly credited to your balance. Hold it, cash it out, or convert to real PAXG gold tokens.', num: '04' },
@@ -144,21 +144,21 @@ function HowItWorksCustomer() {
                     <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
                         <span className="section-num">4</span> How to Cash Out
                     </motion.h2>
-                    <p>You have two ways to turn your gold into real value:</p>
+                    <p>Withdraw your gold as PAXG tokens directly to your Solana wallet:</p>
 
                     <motion.div className="step-cards" initial="hidden" whileInView="visible" viewport={{ once: true }} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                         <motion.div className="step-card" variants={fadeUp} custom={0}>
-                            <div className="step-card-icon"><CreditCard size={22} /></div>
-                            <h3>💳 Cash Out (CAD)</h3>
-                            <p>Connect your bank account or debit card via Stripe. Choose instant (30 min, 1% fee) or standard (2-3 days, free).</p>
+                            <div className="step-card-icon"><Wallet size={22} /></div>
+                            <h3>Withdraw to Solana Wallet</h3>
+                            <p>Enter your Solana wallet address (Phantom, Coinbase, etc.) and receive PAXG tokens — real gold backed by Paxos, stored in London vaults. Transfers arrive in ~2 minutes with minimal gas fees.</p>
                             <Link to="/how-cashout-works" className="btn btn-secondary" style={{ marginTop: 'var(--space-4)', fontSize: '0.85rem' }}>
                                 Learn More <ArrowRight size={14} />
                             </Link>
                         </motion.div>
                         <motion.div className="step-card" variants={fadeUp} custom={1}>
-                            <div className="step-card-icon"><Wallet size={22} /></div>
-                            <h3>🪙 Get Real Gold (PAXG)</h3>
-                            <p>Enter your crypto wallet address and receive PAXG tokens — real gold backed by Paxos, stored in London vaults.</p>
+                            <div className="step-card-icon"><Coins size={22} /></div>
+                            <h3>Hold or Swap</h3>
+                            <p>Once in your wallet, hold PAXG for gold price appreciation, swap for USDC or SOL on any Solana DEX, or transfer to an exchange to convert to fiat.</p>
                             <Link to="/gold" className="btn btn-secondary" style={{ marginTop: 'var(--space-4)', fontSize: '0.85rem' }}>
                                 About PAXG <ArrowRight size={14} />
                             </Link>

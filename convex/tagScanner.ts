@@ -10,7 +10,7 @@ declare var Buffer: { from(data: ArrayBuffer): { toString(encoding: string): str
 // On-demand: triggered when a user claims they tagged a business
 // 1. Playwright browses instagram.com/{business}/tagged/
 // 2. Screenshots the tagged grid + recent individual posts
-// 3. Gemini Flash checks if the claiming user's handle appears
+// 3. AI (OpenRouter) checks if the claiming user's handle appears
 // 4. Auto-verifies if found, rejects if not
 
 const PLAYWRIGHT_URL = process.env.PLAYWRIGHT_SERVICE_URL ?? "http://localhost:3333";
@@ -177,63 +177,41 @@ export const deactivateStaleBusinesses = internalMutation({
     },
 });
 
-// ── Gemini AI helper (supports Google AI Studio + OpenRouter) ──
+// ── OpenRouter AI helper (free models only) ──
 
-async function analyzeWithGemini(prompt: string, screenshotBase64: string): Promise<string> {
-    const geminiKey = process.env.GEMINI_API_KEY;
+const OPENROUTER_MODEL = "google/gemini-2.0-flash-exp:free";
+
+async function analyzeWithAI(prompt: string, screenshotBase64: string): Promise<string> {
     const openrouterKey = process.env.OPENROUTER_API_KEY;
 
-    if (geminiKey) {
-        // Google AI Studio (free)
-        const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inline_data: { mime_type: "image/png", data: screenshotBase64 } },
-                        ],
-                    }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 500 },
-                }),
-            }
-        );
-        if (!resp.ok) throw new Error(`Gemini API ${resp.status}`);
-        const data = await resp.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    if (!openrouterKey) {
+        throw new Error("No OPENROUTER_API_KEY set");
     }
 
-    if (openrouterKey) {
-        // OpenRouter fallback
-        const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${openrouterKey}`,
-                "HTTP-Referer": "https://localkarat.ca",
-            },
-            body: JSON.stringify({
-                model: "google/gemini-2.0-flash-001",
-                messages: [{
-                    role: "user",
-                    content: [
-                        { type: "text", text: prompt },
-                        { type: "image_url", image_url: { url: `data:image/png;base64,${screenshotBase64}` } },
-                    ],
-                }],
-                max_tokens: 500,
-                temperature: 0.1,
-            }),
-        });
-        if (!resp.ok) throw new Error(`OpenRouter ${resp.status}`);
-        const data = await resp.json();
-        return (data as any).choices?.[0]?.message?.content ?? "";
-    }
-
-    throw new Error("No AI API key set (GEMINI_API_KEY or OPENROUTER_API_KEY)");
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${openrouterKey}`,
+            "HTTP-Referer": "https://localkarat.ca",
+            "X-Title": "Karat Gold Verification",
+        },
+        body: JSON.stringify({
+            model: OPENROUTER_MODEL,
+            messages: [{
+                role: "user",
+                content: [
+                    { type: "text", text: prompt },
+                    { type: "image_url", image_url: { url: `data:image/png;base64,${screenshotBase64}` } },
+                ],
+            }],
+            max_tokens: 500,
+            temperature: 0.1,
+        }),
+    });
+    if (!resp.ok) throw new Error(`OpenRouter ${resp.status}`);
+    const data = await resp.json();
+    return (data as any).choices?.[0]?.message?.content ?? "";
 }
 
 // ── Main scan action (called when user claims a tag) ──
@@ -334,8 +312,8 @@ export const scanForUser = action({
             return { verified: true, reason: `@${handle} found in ${business.name}'s tagged posts` };
         }
 
-        // Step 5: Send screenshots to Gemini for deeper analysis
-        const hasAiKey = process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY;
+        // Step 5: Send screenshots to OpenRouter AI for deeper analysis
+        const hasAiKey = process.env.OPENROUTER_API_KEY;
         if (!hasAiKey) {
             // No AI key — auto-approve since Playwright at least confirmed the page loaded
             await ctx.runMutation(internal.tagScanner.autoVerifySubmission, {
@@ -348,7 +326,7 @@ export const scanForUser = action({
             return { verified: true, reason: "Auto-approved (AI verification not configured)" };
         }
 
-        // Analyze each screenshot with Gemini
+        // Analyze each screenshot with AI
         const screenshots: string[] = scanResult.screenshots ?? [];
         if (screenshots.length === 0) {
             await ctx.runMutation(internal.tagScanner.createRejectedSubmission, {
@@ -362,7 +340,7 @@ export const scanForUser = action({
             return { verified: false, reason: "No tagged posts found for this business" };
         }
 
-        // Send the grid screenshot + first post screenshot to Gemini
+        // Send the grid screenshot + first post screenshot to AI
         const screenshotToAnalyze = screenshots[0]; // Grid view
         const prompt = `You are verifying whether Instagram user "@${handle}" has tagged the business "@${businessIgHandle}" (${business.name}).
 
@@ -390,7 +368,7 @@ Rules:
 - If the page hasn't loaded or shows no posts: {"found": false, "allVisibleUsernames": [], "confidence": 50, "reason": "Page did not load properly"}`;
 
         try {
-            const raw = await analyzeWithGemini(prompt, screenshotToAnalyze);
+            const raw = await analyzeWithAI(prompt, screenshotToAnalyze);
             const jsonMatch = raw.match(/\{[\s\S]*\}/);
 
             if (jsonMatch) {
@@ -404,7 +382,7 @@ Rules:
                     for (let i = 1; i < Math.min(screenshots.length, 4); i++) {
                         try {
                             const postPrompt = `Look at this Instagram post screenshot. Is the poster's username "@${handle}" or "${handle}"? Just respond with JSON: {"found": true/false, "username": "visible_username", "confidence": 0-100}`;
-                            const postRaw = await analyzeWithGemini(postPrompt, screenshots[i]);
+                            const postRaw = await analyzeWithAI(postPrompt, screenshots[i]);
                             const postMatch = postRaw.match(/\{[\s\S]*\}/);
                             if (postMatch) {
                                 const postParsed = JSON.parse(postMatch[0]);

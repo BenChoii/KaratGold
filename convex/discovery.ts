@@ -77,21 +77,17 @@ export const listNearby = query({
                         );
                     }
                 } else if (locType === "service_area" && business.serviceAreas) {
-                    // For service area businesses, check if user's city is in their service areas
+                    // For service area businesses, prioritize those serving the user's city
                     if (args.userCity) {
                         const userCityLower = args.userCity.toLowerCase();
                         const servesCity = business.serviceAreas.some(
                             (area) => area.toLowerCase() === userCityLower
                         );
-                        // If they serve the user's city, set a nominal distance
-                        // so they appear in results but after nearby physical businesses
                         if (servesCity) {
                             distanceKm = 0; // "in your area"
-                        } else {
-                            return null; // Don't show service area businesses outside their areas
                         }
                     }
-                    // If no userCity provided, still show service area businesses
+                    // Show all service area businesses globally (no filtering)
                     distanceKm = distanceKm ?? null;
                 }
 

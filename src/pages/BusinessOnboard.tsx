@@ -8,13 +8,6 @@ import { api } from '../../convex/_generated/api'
 import LocationAutocomplete from '../components/LocationAutocomplete'
 import './BusinessOnboard.css'
 
-const OKANAGAN_CITIES = [
-    'Kelowna', 'West Kelowna', 'Vernon', 'Penticton', 'Kamloops',
-    'Lake Country', 'Summerland', 'Peachland', 'Armstrong', 'Enderby',
-    'Coldstream', 'Salmon Arm', 'Revelstoke', 'Merritt', 'Oliver',
-    'Osoyoos', 'Keremeos', 'Princeton', 'Sicamous', 'Lumby'
-]
-
 function BusinessOnboard() {
     const navigate = useNavigate()
     const { user: clerkUser } = useUser()
@@ -46,7 +39,6 @@ function BusinessOnboard() {
     })
     const [submitting, setSubmitting] = useState(false)
     const [cityInput, setCityInput] = useState('')
-    const [showCitySuggestions, setShowCitySuggestions] = useState(false)
 
     const categories = [
         'Café', 'Restaurant & Bar', 'Automotive', 'Plumbing', 'HVAC',
@@ -55,17 +47,12 @@ function BusinessOnboard() {
         'Electrician', 'Roofing', 'Pest Control', 'Other'
     ]
 
-    const filteredCities = OKANAGAN_CITIES.filter(
-        c => c.toLowerCase().includes(cityInput.toLowerCase()) &&
-            !form.serviceAreas.includes(c)
-    )
-
     const addServiceArea = (city: string) => {
-        if (!form.serviceAreas.includes(city)) {
-            setForm(f => ({ ...f, serviceAreas: [...f.serviceAreas, city] }))
+        const trimmed = city.trim()
+        if (trimmed && !form.serviceAreas.includes(trimmed)) {
+            setForm(f => ({ ...f, serviceAreas: [...f.serviceAreas, trimmed] }))
         }
         setCityInput('')
-        setShowCitySuggestions(false)
     }
 
     const removeServiceArea = (city: string) => {
@@ -113,7 +100,7 @@ function BusinessOnboard() {
                     <div className="onboard-header">
                         <h1 className="text-h2">Set Up Your Business</h1>
                         <p className="text-body" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-2)' }}>
-                            Join the Okanagan&apos;s gold rewards network — let real customers post about you
+                            Join the gold rewards network — let real customers post about you
                         </p>
                     </div>
 
@@ -125,7 +112,7 @@ function BusinessOnboard() {
                             <input
                                 type="text"
                                 className="input"
-                                placeholder="e.g. Lake Country Brewing"
+                                placeholder="e.g. Golden Bean Coffee"
                                 value={form.name}
                                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                                 required
@@ -192,7 +179,7 @@ function BusinessOnboard() {
                                         latitude: lat,
                                         longitude: lng,
                                     }))}
-                                    placeholder="e.g. 1234 Main St, Kelowna, BC"
+                                    placeholder="e.g. 1234 Main St, Your City"
                                 />
                             </div>
                         )}
@@ -227,34 +214,26 @@ function BusinessOnboard() {
                                     <input
                                         type="text"
                                         className="input"
-                                        placeholder="Type a city name..."
+                                        placeholder="Type a city name and press Enter..."
                                         value={cityInput}
                                         onChange={e => {
                                             setCityInput(e.target.value)
-                                            setShowCitySuggestions(true)
                                         }}
-                                        onFocus={() => setShowCitySuggestions(true)}
-                                        onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault()
+                                                addServiceArea(cityInput)
+                                            }
+                                        }}
                                     />
-                                    <Plus size={16} className="city-input-icon" />
-
-                                    {showCitySuggestions && cityInput && filteredCities.length > 0 && (
-                                        <div className="city-suggestions">
-                                            {filteredCities.slice(0, 6).map(city => (
-                                                <button
-                                                    key={city}
-                                                    type="button"
-                                                    className="city-suggestion"
-                                                    onMouseDown={(e) => {
-                                                        e.preventDefault()
-                                                        addServiceArea(city)
-                                                    }}
-                                                >
-                                                    <MapPin size={12} /> {city}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <button
+                                        type="button"
+                                        className="city-input-icon"
+                                        onClick={() => addServiceArea(cityInput)}
+                                        style={{ cursor: 'pointer', background: 'none', border: 'none', color: 'inherit' }}
+                                    >
+                                        <Plus size={16} />
+                                    </button>
                                 </div>
                             </div>
                         )}
